@@ -1,0 +1,1 @@
+import Link from "next/link"; import { MessageCircle } from "lucide-react"; export function WhatsAppButton(){return <Link className="whatsapp" href="/contato" aria-label="Falar com a Viver pelo WhatsApp"><MessageCircle/></Link>}
