@@ -92,3 +92,10 @@ body::after{content:"";position:fixed;left:50%;top:50%;width:min(52vw,580px);asp
 .item-left{top:50%;left:0;translate:-50% -50%}
 .visual-core{width:38%;max-width:190px}
 @media(max-width:620px){.connected-orbit{width:72%;height:72%}.connected-item{min-width:76px;min-height:32px;padding:5px 9px;font-size:.67rem}.visual-core{width:38%;padding:11px}.visual-core strong{font-size:.72rem;line-height:1.35}.visual-core span{font-size:.62rem}}
+
+/* Três pilares do SSMA distribuídos no mesmo anel */
+.three-pillars .connected-item{width:142px;min-width:0;line-height:1.25;text-align:center;white-space:normal}
+.pillar-safety{top:0;left:50%;translate:-50% -50%}
+.pillar-health{right:6%;bottom:11%;translate:50% 50%}
+.pillar-environment{left:6%;bottom:11%;translate:-50% 50%}
+@media(max-width:620px){.three-pillars .connected-item{width:102px;min-height:36px;padding:5px 8px;font-size:.62rem}.pillar-health{right:4%;bottom:10%}.pillar-environment{left:4%;bottom:10%}}
