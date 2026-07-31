@@ -5,13 +5,13 @@ export const primaryServices = [
   { title: "Gestão Ambiental", description: "Aspectos e impactos, resíduos, produtos químicos e conformidade ambiental.", icon: Leaf },
   { title: "Mobilização e contratos", description: "Organização técnica e documental para iniciar e manter contratos.", icon: ClipboardCheck },
   { title: "Auditorias e conformidade", description: "Verificação de requisitos, evidências e planos de adequação.", icon: Scale },
-  { title: "Treinamentos", description: "Capacitações legais e personalizadas conforme a atividade.", icon: GraduationCap },
+  { title: "Treinamentos e capacitações", description: "NRs, integração, CIPA, brigada, EPI, ergonomia e conteúdos personalizados.", icon: GraduationCap },
   { title: "Inspeções em campo", description: "Avaliação prática das condições e acompanhamento das ações.", icon: HardHat },
   { title: "Gestão integrada", description: "Integração entre qualidade, meio ambiente e segurança.", icon: Settings },
   { title: "Perícias e assistência técnica", description: "Análises especializadas, pareceres e apoio em diligências.", icon: Building2 },
 ];
 
-export const sectors = ["Obras civis e infraestrutura","Manutenção industrial","Montagem eletromecânica","Instalações elétricas e telecomunicações","Transporte e logística","Limpeza e conservação industrial","Máquinas e equipamentos","Andaimes e trabalho em altura","Monitoramento ambiental","Alimentação, apoio operacional e facilities","Controle de vetores e pragas","Serviços executados em áreas de mineração"];
+export const sectors = ["Obras civis e infraestrutura","Manutenção industrial","Montagem eletromecânica","Instalações elétricas e telecomunicações","Transporte e logística","Limpeza e conservação industrial","Máquinas e equipamentos","Andaimes e trabalho em altura","Monitoramento ambiental","Alimentação, apoio operacional e facilities","Controle de vetores e pragas","Serviços executados em áreas de mineração","Clínicas, consultórios e laboratórios","Hospitais, serviços de saúde e apoio diagnóstico","Serviços de saúde ocupacional e atendimento ambulatorial"];
 
 export const environmentalHighlights = [
   "Diagnóstico e conformidade ambiental",
