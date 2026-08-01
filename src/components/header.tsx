@@ -7,7 +7,7 @@ import { Logo } from "./logo";
 const links = [
   ["/", "Início"], ["/sobre", "Sobre"], ["/servicos", "Serviços"],
   ["/setores-atendidos", "Setores atendidos"], ["/noticias", "Notícias"],
-  ["/canal-de-confianca", "Canal de confiança"], ["/contato", "Contato"],
+  ["/clientes", "Clientes"], ["/canal-de-confianca", "Canal de confiança"], ["/contato", "Contato"],
 ];
 
 export function Header() {
