@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { news } from "@/data/news";
 export default function sitemap(): MetadataRoute.Sitemap {
-  const pages = ["", "/sobre", "/servicos", "/setores-atendidos", "/noticias", "/clientes", "/canal-de-confianca", "/contato", "/politica-de-privacidade"].map(path => ({ url: `${siteConfig.url}${path}`, lastModified: new Date(), changeFrequency: (path === "/noticias" ? "weekly" : path === "" ? "monthly" : "yearly") as MetadataRoute.Sitemap[number]["changeFrequency"], priority: path === "" ? 1 : .7 }));
+  const pages = ["", "/sobre", "/servicos", "/setores-atendidos", "/noticias", "/clientes", "/canal-de-denuncias", "/contato", "/politica-de-privacidade"].map(path => ({ url: `${siteConfig.url}${path}`, lastModified: new Date(), changeFrequency: (path === "/noticias" ? "weekly" : path === "" ? "monthly" : "yearly") as MetadataRoute.Sitemap[number]["changeFrequency"], priority: path === "" ? 1 : .7 }));
   const articles = news.map(article => ({ url: `${siteConfig.url}/noticias/${article.slug}`, lastModified: new Date(`${article.publishedAt}T12:00:00Z`), changeFrequency: "monthly" as const, priority: .6 }));
   return [...pages, ...articles];
 }
