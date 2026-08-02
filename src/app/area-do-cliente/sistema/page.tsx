@@ -5,8 +5,8 @@ import {Activity,Building2,Download,ExternalLink,LogOut,MessageSquareWarning,Plu
 import {clearPortalSession,getPortalSession,portalProfile,type PortalProfile,type PortalSession} from "@/lib/portal-auth";
 
 const ssmaUrl=process.env.NEXT_PUBLIC_SSMA_APP_URL||"http://localhost:3000";
-const pulsarUrl=process.env.NEXT_PUBLIC_PULSAR_APP_URL||"https://viver-pulsar.vdeolisantos.chatgpt.site";
-const channelUrl=process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL||"https://canal-confianca-viver.vdeolisantos.chatgpt.site";
+const pulsarUrl=process.env.NEXT_PUBLIC_PULSAR_APP_URL||"https://pulsar.viversst.com.br";
+const channelUrl=process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL||"https://canal.viversst.com.br";
 
 export default function SistemaCliente(){
  const router=useRouter(),[session,setSession]=useState<PortalSession|null>(null),[profile,setProfile]=useState<PortalProfile|null>(null),[manager,setManager]=useState(false),[message,setMessage]=useState("");

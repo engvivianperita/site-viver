@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-const channelUrl = "https://canal-confianca-viver.vdeolisantos.chatgpt.site";
+const channelUrl = "https://canal.viversst.com.br";
 
 export const metadata: Metadata = {
   title: "Canal de denúncias",
