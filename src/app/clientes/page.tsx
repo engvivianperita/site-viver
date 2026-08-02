@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default function ClientesPage() {
-  const pulsarUrl = process.env.NEXT_PUBLIC_PULSAR_APP_URL?.trim();
-  const channelUrl = process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL?.trim();
+  const pulsarUrl = process.env.NEXT_PUBLIC_PULSAR_APP_URL?.trim() || "https://pulsar.viversst.com.br";
+  const channelUrl = process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL?.trim() || "https://canal.viversst.com.br";
 
   return <>
     <PageHero eyebrow="Área exclusiva" title="Clientes" text="Escolha o sistema que deseja acessar. O uso é restrito a clientes e usuários autorizados pela Viver." />
