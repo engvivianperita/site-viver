@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Building2, LockKeyhole, MessageSquareWarning, ShieldCheck } from "lucide-react";
+import { ArrowRight, BrainCircuit, Building2, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
 import { Breadcrumbs, PageHero } from "@/components/ui";
+import { safePublicUrl } from "@/lib/public-links";
 
 export const metadata: Metadata = {
   title: "Área do cliente",
@@ -10,8 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default function ClientesPage() {
-  const pulsarUrl = process.env.NEXT_PUBLIC_PULSAR_APP_URL?.trim() || "https://pulsar.viversst.com.br";
-  const channelUrl = process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL?.trim() || "https://canal.viversst.com.br";
+  const pulsarUrl = safePublicUrl(process.env.NEXT_PUBLIC_PULSAR_APP_URL || "https://pulsar.viversst.com.br");
+  const channelUrl = safePublicUrl(process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL || "https://canal.viversst.com.br");
+  const complianceUrl = safePublicUrl(process.env.NEXT_PUBLIC_COMPLIANCE_APP_URL || "https://compliance.viversst.com.br");
 
   return <>
     <PageHero eyebrow="Área exclusiva" title="Área do cliente" text="Escolha o sistema que deseja acessar. O uso é restrito a clientes e usuários autorizados pela Viver." />
@@ -47,6 +49,15 @@ export default function ClientesPage() {
             {channelUrl
               ? <a className="button" href={channelUrl} target="_blank" rel="noreferrer">Acessar Canal de Denúncias <ArrowRight size={17} /></a>
               : <Link className="button" href="/canal-de-denuncias">Acessar Canal de Denúncias <ArrowRight size={17} /></Link>}
+          </article>
+          <article className="client-system-card">
+            <span className="client-system-icon"><Scale aria-hidden="true" /></span>
+            <span className="client-system-label">PROGRAMA DE INTEGRIDADE</span>
+            <h3>Viver Integridade</h3>
+            <p>Gestão de compliance, riscos e controles, políticas, terceiros, treinamentos, apurações, planos de melhoria e evidências.</p>
+            {complianceUrl
+              ? <a className="button" href={complianceUrl} target="_blank" rel="noreferrer">Acessar Viver Integridade <ArrowRight size={17} /></a>
+              : <span className="client-system-pending"><LockKeyhole size={17} aria-hidden="true" /> Publicação pendente</span>}
           </article>
         </div>
         <p className="client-hub-help">Ainda não possui acesso ou está com dificuldades? <Link href="/contato">Fale com a equipe da Viver</Link>.</p>
