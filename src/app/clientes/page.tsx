@@ -4,7 +4,7 @@ import { ArrowRight, BrainCircuit, Building2, LockKeyhole, MessageSquareWarning,
 import { Breadcrumbs, PageHero } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Clientes",
+  title: "Área do cliente",
   description: "Acesso aos sistemas online da Viver Segurança no Trabalho.",
   alternates: { canonical: "/clientes" },
 };
@@ -14,8 +14,8 @@ export default function ClientesPage() {
   const channelUrl = process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL?.trim() || "https://canal.viversst.com.br";
 
   return <>
-    <PageHero eyebrow="Área exclusiva" title="Clientes" text="Escolha o sistema que deseja acessar. O uso é restrito a clientes e usuários autorizados pela Viver." />
-    <Breadcrumbs current="Clientes" />
+    <PageHero eyebrow="Área exclusiva" title="Área do cliente" text="Escolha o sistema que deseja acessar. O uso é restrito a clientes e usuários autorizados pela Viver." />
+    <Breadcrumbs current="Área do cliente" />
     <section className="client-hub">
       <div className="container">
         <div className="client-hub-intro">
