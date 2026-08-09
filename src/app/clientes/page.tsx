@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Building2, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
+import { ArrowRight, BrainCircuit, Building2, Leaf, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
 import { Breadcrumbs, PageHero } from "@/components/ui";
 import { safePublicUrl } from "@/lib/public-links";
 
@@ -14,6 +14,7 @@ export default function ClientesPage() {
   const pulsarUrl = safePublicUrl(process.env.NEXT_PUBLIC_PULSAR_APP_URL || "https://pulsar.viversst.com.br");
   const channelUrl = safePublicUrl(process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL || "https://canal.viversst.com.br");
   const complianceUrl = safePublicUrl(process.env.NEXT_PUBLIC_COMPLIANCE_APP_URL || "https://compliance.viversst.com.br");
+  const esgUrl = safePublicUrl(process.env.NEXT_PUBLIC_ESG_APP_URL || "https://verdeon-esg.vdeolisantos.chatgpt.site");
 
   return <>
     <PageHero eyebrow="Área exclusiva" title="Área do cliente" text="Escolha o sistema que deseja acessar. O uso é restrito a clientes e usuários autorizados pela Viver." />
@@ -31,6 +32,15 @@ export default function ClientesPage() {
             <h3>Integra SSMA</h3>
             <p>Gestão de empresas, obras, documentos, RDOs, auditorias, riscos, indicadores e planos de ação.</p>
             <Link className="button" href="/area-do-cliente">Acessar Integra SSMA <ArrowRight size={17} /></Link>
+          </article>
+          <article className="client-system-card">
+            <span className="client-system-icon"><Leaf aria-hidden="true" /></span>
+            <span className="client-system-label">GESTÃO ESG</span>
+            <h3>Verdeon ESG</h3>
+            <p>Gestão multiempresa de indicadores ambientais, sociais e de governança, evidências, acessos e relatórios.</p>
+            {esgUrl
+              ? <a className="button" href={esgUrl} target="_blank" rel="noreferrer">Acessar Verdeon ESG <ArrowRight size={17} /></a>
+              : <span className="client-system-pending"><LockKeyhole size={17} aria-hidden="true" /> Publicação pendente</span>}
           </article>
           <article className="client-system-card">
             <span className="client-system-icon"><BrainCircuit aria-hidden="true" /></span>
