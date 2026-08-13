@@ -6,8 +6,12 @@ export function safePublicUrl(value?: string) {
     const parsed = new URL(url);
     if (parsed.protocol !== "https:") return "";
     if (["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(parsed.hostname.toLowerCase())) return "";
-    const searchable = `${parsed.hostname}${parsed.pathname}`.toLowerCase();
-    if (searchable.includes("chatgpt") || searchable.includes("vdeolisantos")) return "";
+    const hostname = parsed.hostname.toLowerCase();
+    const approvedHostedApps = new Set([
+      "verdeon-esg.vdeolisantos.chatgpt.site",
+    ]);
+    const searchable = `${hostname}${parsed.pathname}`.toLowerCase();
+    if (!approvedHostedApps.has(hostname) && (searchable.includes("chatgpt") || searchable.includes("vdeolisantos"))) return "";
     return parsed.toString();
   } catch {
     return "";
