@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BrainCircuit, Building2, Leaf, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookOpenCheck, BrainCircuit, Building2, Leaf, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
 import { Breadcrumbs, PageHero } from "@/components/ui";
 import { safePublicUrl } from "@/lib/public-links";
 
@@ -15,6 +15,7 @@ export default function ClientesPage() {
   const channelUrl = safePublicUrl(process.env.NEXT_PUBLIC_REPORTING_CHANNEL_URL || "https://canal.viversst.com.br");
   const complianceUrl = safePublicUrl(process.env.NEXT_PUBLIC_COMPLIANCE_APP_URL || "https://compliance.viversst.com.br");
   const esgUrl = safePublicUrl(process.env.NEXT_PUBLIC_ESG_APP_URL || "https://verdeon-esg.vdeolisantos.chatgpt.site");
+  const ddsUrl = safePublicUrl(process.env.NEXT_PUBLIC_DDS_APP_URL || "https://dds.viversst.com.br");
 
   return <>
     <PageHero eyebrow="Área exclusiva" title="Área do cliente" text="Escolha o sistema que deseja acessar. O uso é restrito a clientes e usuários autorizados pela Viver." />
@@ -69,9 +70,19 @@ export default function ClientesPage() {
               ? <a className="button" href={complianceUrl} target="_blank" rel="noreferrer">Acessar Viver Integridade <ArrowRight size={17} /></a>
               : <span className="client-system-pending"><LockKeyhole size={17} aria-hidden="true" /> Publicação pendente</span>}
           </article>
+          <article className="client-system-card">
+            <span className="client-system-icon"><BookOpenCheck aria-hidden="true" /></span>
+            <span className="client-system-label">SEGURANÇA DO TRABALHO</span>
+            <h3>VIVER DDS</h3>
+            <p>Diálogos Diários de Segurança, conteúdos preventivos, vídeos, registros de leitura e gestão de envios.</p>
+            {ddsUrl
+              ? <a className="button" href={ddsUrl} target="_blank" rel="noreferrer">Acessar VIVER DDS <ArrowRight size={17} /></a>
+              : <span className="client-system-pending"><LockKeyhole size={17} aria-hidden="true" /> Publicação pendente</span>}
+          </article>
         </div>
         <p className="client-hub-help">Ainda não possui acesso ou está com dificuldades? <Link href="/contato">Fale com a equipe da Viver</Link>.</p>
       </div>
     </section>
   </>;
 }
+
