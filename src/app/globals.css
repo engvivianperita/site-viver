@@ -113,3 +113,4 @@ body::after{content:"";position:fixed;left:50%;top:50%;width:min(52vw,580px);asp
 @media(max-width:850px){.client-login-brand{min-height:310px}.client-login-brand>img{width:220px;height:130px}}
 @media(max-width:620px){.header-logo{width:108px!important;height:82px!important}.footer-logo{width:230px}}
 .client-system-cards{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:1050px){.client-system-cards{grid-template-columns:1fr}}
+.contact-link{color:#147f71;font-weight:750;text-decoration:underline;text-underline-offset:3px}.contact-link:hover{color:var(--dark)}
