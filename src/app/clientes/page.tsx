@@ -79,6 +79,13 @@ export default function ClientesPage() {
               ? <a className="button" href={ddsUrl} target="_blank" rel="noreferrer">Acessar VIVER DDS <ArrowRight size={17} /></a>
               : <span className="client-system-pending"><LockKeyhole size={17} aria-hidden="true" /> Publicação pendente</span>}
           </article>
+          <article className="client-system-card">
+            <span className="client-system-icon"><BookOpenCheck aria-hidden="true" /></span>
+            <span className="client-system-label">CAPACITAÇÃO EM SEGURANÇA</span>
+            <h3>Câmara fria — VIVER</h3>
+            <p>Aulas por assunto, procedimentos de entrada e saída, EPI, emergências, exercícios e acompanhamento individual.</p>
+            <Link className="button" href="/treinamentos/camara-fria">Acessar treinamento de câmara fria <ArrowRight size={17} /></Link>
+          </article>
         </div>
         <p className="client-hub-help">Ainda não possui acesso ou está com dificuldades? <Link href="/contato">Fale com a equipe da Viver</Link>.</p>
       </div>
