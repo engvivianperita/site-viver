@@ -39,14 +39,16 @@ export async function handle(req){
  const send=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(cookie?{'Set-Cookie':cookie}:{})}});
  try{
  const url=new URL(req.url),p=url.pathname.split('/api/')[1];
+ // Canonical public origin: hosting proxies may use an internal request URL.
+ const publicOrigin='https://viversst.com.br';
  if(!['GET','POST'].includes(req.method))fail('Método inválido.',405);
  if(req.method==='POST'){
   if(!req.headers.get('content-type')?.startsWith('application/json'))fail('Formato inválido.',415);
-  if(req.headers.get('origin')&&req.headers.get('origin')!==url.origin)fail('Origem não autorizada.',403);
+  if(req.headers.get('origin')&&req.headers.get('origin')!==publicOrigin)fail('Origem não autorizada.',403);
   if(req.headers.get('sec-fetch-site')==='cross-site')fail('Origem não autorizada.',403);
  }
  const body=async()=>{const t=await req.text();if(t.length>100000)fail('Solicitação muito grande.',413);try{return JSON.parse(t)}catch{fail('Dados inválidos.')}};
- const setCookie=t=>`${cookieName}=${t}; HttpOnly; SameSite=Strict; Path=${basePath}; Max-Age=${t?28800:0}${url.protocol==='https:'?'; Secure':''}`;
+ const setCookie=t=>`${cookieName}=${t}; HttpOnly; SameSite=Strict; Path=${basePath}; Max-Age=${t?28800:0}${'; Secure'}`;
  const token=req.headers.get('cookie')?.split('; ').find(c=>c.startsWith(cookieName+'='))?.split('=')[1];
  let u=null;
  if(token&&token.length<=100){const session=await first('sessions',eq('token',digest(token))+'&expires=gt.'+Date.now());if(session){const found=await first('users',eq('id',session.user)+'&active=eq.1');if(found&&found.auth_version===session.auth_version)u=found}}
@@ -66,9 +68,9 @@ export async function handle(req){
  if(p==='ping'&&req.method==='POST'){const b=await body();if(!Number.isInteger(b.lesson)||!lessons[b.lesson-1])fail('Aula inválida.');return send({seconds:await rpc('ping',{p_user:u.id,p_lesson:b.lesson,p_now:Date.now()})})}
  if(p==='answer'&&req.method==='POST'){const b=await body(),l=lessons[b.lesson-1];if(!l||!Number.isInteger(b.answer)||b.answer<0||b.answer>2)fail('Resposta inválida.');const correct=b.answer===l.quiz[2];await rpc('answer',{p_user:u.id,p_lesson:b.lesson,p_answer:b.answer,p_correct:correct,p_version:version});return send({correct,feedback:l.quiz[3],progress:await progress(u.id)})}
  if(p==='admin'&&req.method==='GET'){
-  admin(u);const users=await rows('users','select=id,name,email,role,company,job,change_password,active&order=name'),pr=await rows('progress'),cs=await rows('certificates','select=id,user,created,revoked');return send({shareUrl:url.origin+basePath+'/',companies:await rows('companies','order=name'),users:users.map(x=>({...x,progress:pr.filter(v=>v.user===x.id),certificates:cs.filter(c=>c.user===x.id)})),audit:await rows('audit','select=event,detail,created&order=id.desc&limit=40')});
+  admin(u);const users=await rows('users','select=id,name,email,role,company,job,change_password,active&order=name'),pr=await rows('progress'),cs=await rows('certificates','select=id,user,created,revoked');return send({shareUrl:publicOrigin+basePath+'/',companies:await rows('companies','order=name'),users:users.map(x=>({...x,progress:pr.filter(v=>v.user===x.id),certificates:cs.filter(c=>c.user===x.id)})),audit:await rows('audit','select=event,detail,created&order=id.desc&limit=40')});
  }
- if(p==='share-settings'&&req.method==='POST'){admin(u);const b=await body();if(b.url!==url.origin+basePath+'/')fail('O link do curso é definido pelo endereço desta publicação.');return send({ok:true})}
+ if(p==='share-settings'&&req.method==='POST'){admin(u);const b=await body();if(b.url!==publicOrigin+basePath+'/')fail('O link do curso é definido pelo endereço desta publicação.');return send({ok:true})}
  if(p==='companies'&&req.method==='POST'){admin(u);const b=await body(),cid=id();await insert('companies',{id:cid,name:required(b.name,'a razão social',200),cnpj:required(b.cnpj,'o CNPJ',30),unit:required(b.unit,'a unidade e endereço',300),procedure:required(b.procedure,'o procedimento local',6000),contact:required(b.contact,'o contato do tutor',200)});await audit(u.id,'company_created',cid);return send({id:cid})}
  if(p==='users'&&req.method==='POST'){admin(u);const b=await body(),email=required(b.email,'o e-mail',160).toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))fail('E-mail inválido.');passwordCheck(b.password);if(!await first('companies',eq('id',uid(b.company))))fail('Empresa inválida.');const userId=id();await insert('users',{id:userId,name:required(b.name,'o nome',160),email,password:hash(b.password),role:'student',company:b.company,job:required(b.job,'a função',160)});await audit(u.id,'employee_created',userId);return send({id:userId})}
  if(p==='reset'&&req.method==='POST'){admin(u);const b=await body();passwordCheck(b.password);if(!await first('users',eq('id',uid(b.user))+'&role=eq.student'))fail('Funcionário inválido.');await rpc('password',{p_user:b.user,p_hash:hash(b.password),p_temporary:1});await audit(u.id,'password_reset',b.user);return send({ok:true})}
