@@ -84,7 +84,7 @@ export default function ClientesPage() {
             <span className="client-system-label">CAPACITAÇÃO EM SEGURANÇA</span>
             <h3>Câmara fria — VIVER</h3>
             <p>Aulas por assunto, procedimentos de entrada e saída, EPI, emergências, exercícios e acompanhamento individual.</p>
-            <Link className="button" href="/treinamentos/camara-fria">Acessar treinamento de câmara fria <ArrowRight size={17} /></Link>
+            <a className="button" href="/treinamentos/camara-fria/participante/">Acessar treinamento de câmara fria <ArrowRight size={17} /></a><a href="/treinamentos/camara-fria/admin/">Administração do treinamento</a>
           </article>
         </div>
         <p className="client-hub-help">Ainda não possui acesso ou está com dificuldades? <Link href="/contato">Fale com a equipe da Viver</Link>.</p>
