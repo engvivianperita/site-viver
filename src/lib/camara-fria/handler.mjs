@@ -63,8 +63,18 @@ export async function handle(req){
  if(p==='logout'&&req.method==='POST'){await del('sessions',eq('token',digest(token)));cookie=setCookie('');return send({ok:true})}
  if(p==='password'&&req.method==='POST'){const b=await body();passwordCheck(b.password);if(!verify(b.current,u.password))fail('Senha atual incorreta.',403);if(b.current===b.password)fail('Escolha uma senha diferente.');await rpc('password',{p_user:u.id,p_hash:hash(b.password),p_temporary:0});cookie=setCookie('');await audit(u.id,'password_changed');return send({ok:true})}
  if(u.change_password)fail('Troque a senha temporária para continuar.',403);
- if(p==='final-exam'&&req.method==='GET'){admin(u);return send({version,minimum:80,questions:examLessons.map(l=>({id:l.id,question:l.quiz[0],options:l.quiz[1]}))});}
- if(p==='course'&&req.method==='GET')return send({lessons:publicLessons,sources,version,progress:await progress(u.id),company:u.company?await first('companies',eq('id',u.company)):null,certificates:await certificates(u.id)});
+ if(p==='final-exam'&&req.method==='GET'){if(u.role!=='admin'&&(await progress(u.id)).filter(x=>x.completed).length!==lessons.length)fail('Conclua todas as aulas e exercícios antes da prova.',403);return send({version,minimum:80,questions:examLessons.map(l=>({id:l.id,question:l.quiz[0],options:l.quiz[1]}))});}
+ if(p==='final-exam'&&req.method==='POST'){
+  if(u.role!=='student')fail('A prova deve ser respondida pelo participante.',403);
+  if((await progress(u.id)).filter(x=>x.completed).length!==lessons.length)fail('Conclua todas as aulas e exercícios antes da prova.',403);
+  const b=await body();if(b.examVersion!==version)fail('Atualize a página antes de responder.');
+  if(!Array.isArray(b.answers)||b.answers.length!==examLessons.length||b.answers.some(a=>!Number.isInteger(a)||a<0||a>2))fail('Responda todas as questões.');
+  const score=examLessons.filter((l,i)=>b.answers[i]===l.quiz[2]).length*10;
+  const exam={id:id(),user:u.id,actor:u.id,created:now(),version,answers:b.answers,score,passed:score>=80};
+  await insert('final_exams',exam);await audit(u.id,'final_exam_submitted',exam.id);
+  return send({score,passed:exam.passed,minimum:80});
+ }
+ if(p==='course'&&req.method==='GET')return send({lessons:publicLessons,sources,version,progress:await progress(u.id),company:u.company?await first('companies',eq('id',u.company)):null});
  if(p==='ping'&&req.method==='POST'){const b=await body();if(!Number.isInteger(b.lesson)||!lessons[b.lesson-1])fail('Aula inválida.');return send({seconds:await rpc('ping',{p_user:u.id,p_lesson:b.lesson,p_now:Date.now()})})}
  if(p==='answer'&&req.method==='POST'){const b=await body(),l=lessons[b.lesson-1];if(!l||!Number.isInteger(b.answer)||b.answer<0||b.answer>2)fail('Resposta inválida.');const correct=b.answer===l.quiz[2];await rpc('answer',{p_user:u.id,p_lesson:b.lesson,p_answer:b.answer,p_correct:correct,p_version:version});return send({correct,feedback:l.quiz[3],progress:await progress(u.id)})}
  if(p==='admin'&&req.method==='GET'){
@@ -87,18 +97,13 @@ export async function handle(req){
   if(!validDate(start)||!validDate(end)||start>end||end>today)fail('Datas inválidas ou futuras.');
   const dates=pr.map(x=>localDate(x.completed)).sort();if(start>dates[0]||end<dates.at(-1))fail('O período deve incluir a conclusão das aulas.');
   const snapshot={student:clean(student),company:await first('companies',eq('id',student.company)),type:b.type,online,minutes,total,start,end,place:required(b.place,'o local',200),instructor:required(b.instructor,'o instrutor e qualificação',500),responsible:required(b.responsible,'o responsável técnico e qualificação',500),activities:required(b.activities,'os registros da prática e avaliação',6000),evidence:required(b.evidence,'a referência dos registros',2000),version,topics:lessons.map(l=>l.title),issuer:u.name,issued:now(),ack:{practice:true,review:true,fullscope:b.fullscope===true}};
-  if(b.examVersion!==version||b.supervised!==true)fail('Confirme a aplicação supervisionada da prova e atualize a página.');
-  if(!Array.isArray(b.answers)||b.answers.length!==examLessons.length||b.answers.some(a=>!Number.isInteger(a)||a<0||a>2))fail('Responda todas as questões da prova final.');
-  const correct=examLessons.filter((l,i)=>b.answers[i]===l.quiz[2]).length,score=correct*10;
-  const exam={id:id(),user:student.id,actor:u.id,created:now(),version,answers:b.answers,score,passed:score>=80};
-  await insert('final_exams',exam);
-  await audit(u.id,'final_exam_graded',JSON.stringify({user:student.id,exam:exam.id,score}));
-  if(!exam.passed)return send({passed:false,score,message:'Aproveitamento abaixo de 80%. Revise os assuntos e aplique nova avaliação.'});
-  snapshot.exam={id:exam.id,score,minimum:80,version,supervised:true};
+  const exam=await first('final_exams',eq('user',student.id)+'&'+eq('version',version)+'&order=created.desc');
+  if(!exam?.passed)fail('O participante deve ser aprovado na prova final antes da emissão.');
+  snapshot.exam={id:exam.id,score:exam.score,minimum:80,version,supervised:false};
   const cid=id();await insert('certificates',{id:cid,user:student.id,snapshot});await audit(u.id,'certificate_generated',cid);return send({id:cid});
  }
  if(p==='revoke'&&req.method==='POST'){admin(u);const b=await body();await patch('certificates',eq('id',uid(b.id)),{revoked:1});await audit(u.id,'certificate_revoked',b.id);return send({ok:true})}
- if(p?.startsWith('certificate/')&&req.method==='GET'){const c=await first('certificates',eq('id',uid(p.split('/')[1])));if(!c)fail('Certificado não encontrado.',404);if(u.role!=='admin'&&c.user!==u.id)fail('Sem acesso a este certificado.',403);return send(c)}
+ if(p?.startsWith('certificate/')&&req.method==='GET'){admin(u);const c=await first('certificates',eq('id',uid(p.split('/')[1])));if(!c)fail('Certificado não encontrado.',404);if(u.role!=='admin'&&c.user!==u.id)fail('Sem acesso a este certificado.',403);return send(c)}
  fail('Rota não encontrada.',404);
  }catch(e){if(!e.status)console.error('Falha no treinamento:',e.message);return send({error:e.status?e.message:'Não foi possível concluir. Tente novamente ou avise o responsável.'},e.status||500)}
 }
