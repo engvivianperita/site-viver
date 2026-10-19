@@ -10,7 +10,7 @@ const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status
 const text=(v,n=1000)=>typeof v==='string'?v.trim().slice(0,n):'';
 const required=(v,label,n=1000)=>text(v,n)||fail('Informe '+label+'.');
 const uid=v=>{if(!/^[0-9a-f-]{36}$/i.test(v||''))fail('Identificador inválido.');return v};
-const passwordCheck=p=>{if(typeof p!=='string'||p.length<12||p.length>128)fail('A senha deve ter entre 12 e 128 caracteres.')};
+const passwordCheck=(p,min=6)=>{if(typeof p!=='string'||p.length<min||p.length>128)fail(`A senha deve ter entre ${min} e 128 caracteres.`)};
 const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
 const hash=p=>{const salt=crypto.randomBytes(16).toString('hex');return salt+':'+crypto.scryptSync(p,salt,64).toString('hex')};
 const verify=(p,h)=>{if(typeof p!=='string'||p.length>128)return false;const [salt,x]=h.split(':');const a=Buffer.from(x,'hex'),b=crypto.scryptSync(p,salt,64);return a.length===b.length&&crypto.timingSafeEqual(a,b)};
@@ -64,7 +64,7 @@ export async function handle(req){
  }
  if(!u)fail('Entre na sua conta.',401);
  if(p==='logout'&&req.method==='POST'){await del('sessions',eq('token',digest(token)));cookie=setCookie('');return send({ok:true})}
- if(p==='password'&&req.method==='POST'){const b=await body();passwordCheck(b.password);if(!verify(b.current,u.password))fail('Senha atual incorreta.',403);if(b.current===b.password)fail('Escolha uma senha diferente.');await rpc('password',{p_user:u.id,p_hash:hash(b.password),p_temporary:0});cookie=setCookie('');await audit(u.id,'password_changed');return send({ok:true})}
+ if(p==='password'&&req.method==='POST'){const b=await body();passwordCheck(b.password,u.role==='admin'?12:6);if(!verify(b.current,u.password))fail('Senha atual incorreta.',403);if(b.current===b.password)fail('Escolha uma senha diferente.');await rpc('password',{p_user:u.id,p_hash:hash(b.password),p_temporary:0});cookie=setCookie('');await audit(u.id,'password_changed');return send({ok:true})}
  if(u.change_password)fail('Troque a senha temporária para continuar.',403);
  if(p==='final-exam'&&req.method==='GET'){if(u.role!=='admin'&&(await progress(u.id)).filter(x=>x.completed).length!==lessons.length)fail('Conclua todas as aulas e exercícios antes da prova.',403);return send({version,minimum:80,questions:examLessons.map(l=>({id:l.id,question:l.quiz[0],options:l.quiz[1]}))});}
  if(p==='final-exam'&&req.method==='POST'){
