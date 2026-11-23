@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck, BrainCircuit, Building2, Leaf, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookOpenCheck, BrainCircuit, Building2, FolderOpen, Leaf, LockKeyhole, MessageSquareWarning, Scale, ShieldCheck } from "lucide-react";
 import { Breadcrumbs, PageHero } from "@/components/ui";
 import { safePublicUrl } from "@/lib/public-links";
 
@@ -27,6 +27,13 @@ export default function ClientesPage() {
           <p><ShieldCheck size={20} aria-hidden="true" /> Cada sistema possui acesso protegido e permissões próprias para preservar os dados da sua empresa.</p>
         </div>
         <div className="client-system-cards">
+          <article className="client-system-card">
+            <span className="client-system-icon"><FolderOpen aria-hidden="true" /></span>
+            <span className="client-system-label">ACOMPANHAMENTO DE PROCESSOS</span>
+            <h3>Processos</h3>
+            <p>Acompanhe a abertura e regularização de empresas, licenças, documentos, pendências e prazos.</p>
+            <Link className="button" href="/clientes/processos">Abrir Processos</Link>
+          </article>
           <article className="client-system-card">
             <span className="client-system-icon"><Building2 aria-hidden="true" /></span>
             <span className="client-system-label">GESTÃO INTEGRADA</span>
