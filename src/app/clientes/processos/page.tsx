@@ -28,7 +28,7 @@ export default function ProcessosPage() {
           <article className="client-system-card">
             <span className="client-system-icon"><ClipboardCheck aria-hidden="true" /></span>
             <span className="client-system-label">ALIMENTOS · MINAS GERAIS</span>
-            <h3>Regularização de espetinhos congelados</h3>
+            <h3>Indústria de processamento de carnes</h3>
             <p>Acompanhe as etapas após o registro da empresa: enquadramento, inspeção de produtos de origem animal, licenças, boas práticas, rotulagem e transporte.</p>
             <p>Checklist editável, responsáveis, documentos, prazos, fontes oficiais, dúvidas e histórico. Requisitos sujeitos à validação local e técnica.</p>
             <a className="button" href="https://espetinhos-regulariza-mg.vdeolisantos.chatgpt.site" target="_blank" rel="noopener noreferrer">Acessar painel de regularização</a>
