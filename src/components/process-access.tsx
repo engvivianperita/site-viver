@@ -1,8 +1,14 @@
 "use client";
 import { useEffect, useState, type ReactNode, type FormEvent } from "react";
 import { LockKeyhole } from "lucide-react";
-import { getPortalSession, portalSignIn, portalProfile, savePortalSession, clearPortalSession, portalConfigured } from "@/lib/portal-auth";
+import { getPortalSession, portalSignIn, savePortalSession, clearPortalSession, portalConfigured } from "@/lib/portal-auth";
 
+async function openSession(token?: string) {
+  const response = await fetch("/api/processos/session", token ? { method: "POST", headers: { Authorization: `Bearer ${token}` } } : { cache: "no-store" });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error || "Não foi possível verificar seu acesso.");
+  return body;
+}
 export function ProcessAccess({ children }: { children: ReactNode }) {
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -11,10 +17,9 @@ export function ProcessAccess({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
     const session = getPortalSession();
-    if (!session) { setChecking(false); return; }
-    portalProfile(session.access_token).then(profile => {
-      if (mounted) { setAllowed(Boolean(profile?.active)); setChecking(false); }
-    }).catch(() => { if (mounted) { clearPortalSession(); setChecking(false); } });
+    openSession(session?.access_token).then(() => { if (mounted) setAllowed(true); })
+      .catch(() => { if (mounted) setAllowed(false); })
+      .finally(() => { if (mounted) setChecking(false); });
     return () => { mounted = false; };
   }, []);
   async function login(event: FormEvent<HTMLFormElement>) {
@@ -22,19 +27,23 @@ export function ProcessAccess({ children }: { children: ReactNode }) {
     const form = new FormData(event.currentTarget);
     try {
       const session = await portalSignIn(String(form.get("email")), String(form.get("password")));
-      const profile = await portalProfile(session.access_token);
-      if (!profile?.active) throw new Error("Seu acesso precisa ser autorizado pela Viver.");
+      await openSession(session.access_token);
       savePortalSession(session); setAllowed(true);
-    } catch { setError("Não foi possível entrar. Confira seus dados e a autorização de acesso."); }
+    } catch (e) { setError(e instanceof Error ? e.message : "Não foi possível entrar. Confira seu acesso com a Viver."); }
     finally { setBusy(false); }
   }
+  async function logout() {
+    const response = await fetch("/api/processos/session", { method: "DELETE" });
+    if (!response.ok) { setError("Não foi possível encerrar a sessão. Tente novamente."); return; }
+    clearPortalSession(); setAllowed(false);
+  }
   if (checking) return <section className="container" style={{padding: "48px 24px"}} role="status">Verificando seu acesso...</section>;
-  if (allowed) return <><div className="container" style={{paddingTop:24, display:"flex",justifyContent:"space-between",gap:16}}><span><LockKeyhole size={16} aria-hidden="true" /> Acesso autenticado</span><button type="button" className="button" onClick={() => { clearPortalSession(); setAllowed(false); }}>Sair de Processos</button></div>{children}</>;
+  if (allowed) return <><div className="container" style={{paddingTop:24, display:"flex",justifyContent:"space-between",gap:16}}><span><LockKeyhole size={16} aria-hidden="true" /> Acesso autenticado pelo portal Viver</span><button type="button" className="button" onClick={logout}>Sair de Processos</button></div>{error && <p className="container" role="alert">{error}</p>}{children}</>;
   return <section className="container" style={{padding:"48px 24px"}}>
     <div className="client-login-card" style={{maxWidth:480,margin:"auto"}}>
       <LockKeyhole aria-hidden="true" /><h2>Acesso a Processos</h2>
-      <p>Entre com o e-mail e a senha do seu acesso Viver. Apenas usuários ativos e autorizados podem continuar.</p>
-      {!portalConfigured && <p role="alert">O acesso por senha aguarda a configuração do Supabase na hospedagem. Solicite a configuração à Viver.</p>}
+      <p>Entre com o e-mail e a senha do seu acesso Viver. Os processos disponíveis dependem da autorização da sua empresa.</p>
+      {!portalConfigured && <p role="alert">O acesso por senha aguarda configuração na hospedagem. Solicite a configuração à Viver.</p>}
       <form onSubmit={login}>
         <label>E-mail<input name="email" type="email" autoComplete="username" required /></label>
         <label>Senha<input name="password" type="password" autoComplete="current-password" required /></label>
