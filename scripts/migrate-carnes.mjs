@@ -1,0 +1,20 @@
+import { createHash } from 'node:crypto';
+let raw='';for await (const chunk of process.stdin)raw+=chunk;
+const state=JSON.parse(raw);
+if(!state||!Array.isArray(state.items)||!Array.isArray(state.questions)||!Array.isArray(state.history)||!state.profile)throw new Error('Backup inválido.');
+const base=process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/,'');const key=process.env.SUPABASE_SERVICE_ROLE_KEY;
+if(!base||!key)throw new Error('Defina as variáveis do projeto Supabase existente. Não informe a chave como argumento.');
+const headers={apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json'};
+const url=base+'/rest/v1/regularization_workspaces';
+const before=await fetch(url+'?id=eq.carnes-main&select=id',{headers});
+if(!before.ok)throw new Error('A tabela de Processos não está pronta. Aplique a migração de esquema.');
+if((await before.json()).length)throw new Error('Processo existente. A migração não substituirá os dados.');
+const r=await fetch(url,{method:'POST',headers:{...headers,Prefer:'return=representation'},body:JSON.stringify({id:'carnes-main',company_id:null,state,version:1})});
+if(!r.ok)throw new Error('Não foi possível importar o processo. O painel antigo deve permanecer ativo.');
+const after=await fetch(url+'?id=eq.carnes-main&select=state,version',{headers});
+if(!after.ok)throw new Error('Não foi possível verificar a cópia.');
+const rows=await after.json();
+function canonical(x){if(Array.isArray(x))return x.map(canonical);if(x&&typeof x==='object')return Object.fromEntries(Object.keys(x).sort().map(k=>[k,canonical(x[k])]));return x}
+const hash=x=>createHash('sha256').update(JSON.stringify(canonical(x))).digest('hex');
+if(hash(rows[0]?.state)!==hash(state))throw new Error('A cópia não corresponde ao backup. Confira antes de trocar o acesso.');
+console.log(JSON.stringify({migrated:true,items:state.items.length,version:rows[0].version,sha256:hash(state)}));

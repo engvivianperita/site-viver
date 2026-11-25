@@ -31,8 +31,8 @@ export default function ProcessosPage() {
             <h3>Indústria de processamento de carnes</h3>
             <p>Acompanhe as etapas após o registro da empresa: enquadramento, inspeção de produtos de origem animal, licenças, boas práticas, rotulagem e transporte.</p>
             <p>Checklist editável, responsáveis, documentos, prazos, fontes oficiais, dúvidas e histórico. Requisitos sujeitos à validação local e técnica.</p>
-            <a className="button" href="https://espetinhos-regulariza-mg.vdeolisantos.chatgpt.site" target="_blank" rel="noopener noreferrer">Acessar painel de regularização</a>
-            <p><LockKeyhole size={16} aria-hidden="true" /> Abre em nova aba. Acesso restrito a usuários autorizados.</p>
+            <Link className="button" href="/clientes/processos/carnes/painel" prefetch={false}>Acessar painel de regularização</Link>
+            <p><LockKeyhole size={16} aria-hidden="true" /> Acesso pelo portal Viver, conforme autorização para a empresa.</p>
           </article>
         </div>
         <p className="client-hub-help"><Link href="/clientes">Voltar à Área do cliente</Link></p>
