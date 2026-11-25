@@ -32,7 +32,7 @@ export default function ProcessosPage() {
             <p>Acompanhe as etapas após o registro da empresa: enquadramento, inspeção de produtos de origem animal, licenças, boas práticas, rotulagem e transporte.</p>
             <p>Checklist editável, responsáveis, documentos, prazos, fontes oficiais, dúvidas e histórico. Requisitos sujeitos à validação local e técnica.</p>
             <a className="button" href="https://espetinhos-regulariza-mg.vdeolisantos.chatgpt.site" target="_blank" rel="noopener noreferrer">Acessar painel de regularização</a>
-            <p><LockKeyhole size={16} aria-hidden="true" /> Abre em nova aba e requer login no ChatGPT com acesso autorizado.</p>
+            <p><LockKeyhole size={16} aria-hidden="true" /> Abre em nova aba. Acesso restrito a usuários autorizados.</p>
           </article>
         </div>
         <p className="client-hub-help"><Link href="/clientes">Voltar à Área do cliente</Link></p>
