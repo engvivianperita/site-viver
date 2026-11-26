@@ -4,7 +4,38 @@ export const DOCUMENTACAO_HTML = `<!doctype html><html lang="pt-BR" data-storage
 header{background:white;color:#173b37;border-bottom:4px solid #2ca997;align-items:center}header span{color:#526863}.brand{display:flex;align-items:center;gap:20px}.brand img{width:100px;height:76px;object-fit:contain}.brand strong{border-left:1px solid #d9eae7;padding-left:20px}button.primary,button[aria-current=true]{background:#41e681;color:#102f2c;border-color:#2ca997}#paper img{display:block;width:100px;height:76px;object-fit:contain;margin-bottom:12px}#paper{border-top:4px solid #2ca997}@media print{#paper{border-top:4px solid #2ca997}}
 header{padding-block:10px}nav{padding:6px 0}.dashboard,.editor-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}.stats{display:flex;flex-wrap:wrap;gap:8px}.stats span{background:#e2faf1;border-radius:10px;padding:12px}.stats strong{display:block;font-size:1.5rem}.doc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}.doc-grid article{border:1px solid #d9eae7;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:flex-start}.doc-grid h4{margin:12px 0 4px;font-size:1.15rem}.doc-grid p{margin:0 0 12px;flex:1}.reference{background:#f5faf9;padding:8px 12px;border-left:3px solid #2ca997}.model-table{margin:16px 0;padding:12px}.model-table textarea{min-width:105px;min-height:58px}.model-table button{margin:8px 8px 0 0}#activity-list{padding-left:20px}#activity-list li{margin:8px 0}#paper{max-width:850px;margin-inline:auto;white-space:normal;padding:32px;box-shadow:0 12px 35px #102f2c14}#paper h2{font-size:2rem;margin:12px 0;color:#102f2c}#paper h3{color:#18786c;margin-top:22px}#paper p,#paper td{white-space:pre-wrap}#paper th{background:#102f2c;color:white}#paper .pending{color:#8e4800}#paper .report-brand{border-bottom:2px solid #2ca997;margin-bottom:14px}@media print{@page{size:A4;margin:14mm}#paper{padding:0;box-shadow:none}#paper .scroll{overflow:visible}#paper th{color:#102f2c;background:#e2faf1}#paper h3{break-after:avoid}#paper tr{break-inside:avoid}}
 
-.finding-card{margin:16px 0;padding:14px}.work-actions{margin-top:18px}.import-field{margin:12px 0}.import-field small{white-space:pre-wrap;overflow-wrap:anywhere}.import-source{white-space:pre-wrap;overflow:auto;max-height:350px;background:#f5faf9;padding:14px}</style>
+.finding-card{margin:16px 0;padding:14px}.work-actions{margin-top:18px}.import-field{margin:12px 0}.import-field small{white-space:pre-wrap;overflow-wrap:anywhere}.import-source{white-space:pre-wrap;overflow:auto;max-height:350px;background:#f5faf9;padding:14px}
+#paper .report-brand{display:flex;align-items:center;gap:16px;padding-bottom:7px;margin-bottom:16px}
+#paper .report-brand img{width:82px;height:62px;margin:0}
+#paper .report-brand strong,#paper .report-brand span{display:block}
+#paper .report-brand span{font-size:.85rem;color:#526863}
+#paper h2{font-size:1.75rem;line-height:1.15;margin:0 0 7px}
+#paper .report-status{font-weight:650;color:#526863;margin:0 0 17px}
+#paper h3{font-size:1.1rem;line-height:1.25;border-bottom:1px solid #cbdcd8;padding-bottom:4px;margin:19px 0 6px}
+#paper h4{font-size:1rem;margin:13px 0 5px}
+#paper p{margin:6px 0 12px;overflow-wrap:anywhere}
+#paper .report-table{margin:0 0 10px}
+#paper .report-table table{table-layout:fixed;width:100%;font-size:.86rem}
+#paper .report-table th,#paper .report-table td{border:1px solid #cbdcd8;padding:7px 8px;overflow-wrap:anywhere}
+#paper .report-table th{background:#d3ebe5;color:#102f2c}
+#paper .report-table tr:nth-child(even){background:#f2f8f6}
+#paper .report-detail th:first-child{width:32%}
+#paper .report-detail td:first-child{font-weight:600}
+#paper .report-end{border-top:1px solid #cbdcd8;margin-top:20px;padding-top:8px;color:#526863;font-size:.8rem}
+@media print{
+ @page{size:A4;margin:14mm 15mm 15mm}
+ html,body,main{margin:0;padding:0;background:#fff;max-width:none}
+ #paper{margin:0;max-width:none;border:0;line-height:1.35;font-size:10.5pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ #paper h2{font-size:21pt}#paper h3{font-size:13pt}#paper h4{font-size:11pt}
+ #paper h2,#paper h3,#paper h4,#paper .report-brand{break-after:avoid}
+ #paper p{orphans:3;widows:3}
+ #paper .report-table thead{display:table-header-group}
+ #paper .report-table table{font-size:9pt}
+ #paper .report-table th,#paper .report-table td{padding:5px 6px}
+ #paper .report-table tr{break-inside:auto}
+ #paper .report-table thead tr{break-inside:avoid}
+}
+#paper .report-matrix th,#paper .report-matrix td{text-align:center;font-weight:650}#paper .report-matrix tr{break-inside:avoid}</style>
 <header><div class="brand"><img src="/brand/logo-viver-positiva.png" alt="Viver Segurança no Trabalho"><strong>Gestão documental</strong></div><a href="/clientes/processos">Voltar a Processos</a></header>
 <main><div id="intro"><h1>Documentação de SST</h1><p>Organize as exigências por estabelecimento e prepare minutas a partir das suas avaliações de campo.</p></div>
 <section id="clientbar"><div class="grid"><label>Estabelecimento ativo<select id="clients"></select></label><div class="actions" style="align-items:end;padding-bottom:12px"><button id="new" class="primary">Novo estabelecimento</button></div></div></section>
@@ -585,6 +616,26 @@ function dashboard(client){
  get('workspace').innerHTML='<div class="dashboard"><div><h2>'+esc(client.name)+'</h2><p>Organize o cadastro, confira os requisitos e prepare os documentos.</p></div><div class="stats"><span><strong>'+((client.activities||[]).length)+'</strong> Atividades cadastradas</span><span><strong>'+docs.length+'</strong> Minutas salvas</span><span><strong>'+dated.length+'</strong> Revisões programadas</span></div></div><h3>Documentos do estabelecimento</h3><div class="doc-grid">'+Object.keys(forms).map(name=>'<article><span class="badge">'+(client.docs[name]?'Minuta salva':'Modelo editável')+'</span><h4>'+esc(name)+'</h4><p>'+esc(titles[name]||name)+'</p><button data-open="'+esc(name)+'">Abrir modelo</button></article>').join('')+'</div><h3>Calendário de revisões</h3>'+(dated.length?'<ul>'+dated.map(([name,doc])=>'<li>'+esc(doc.reviewDate.split('-').reverse().join('/'))+' — '+esc(name)+'</li>').join('')+'</ul>':'<p>Informe a próxima revisão no editor para acompanhar a data aqui.</p>');
  get('workspace').querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>{docType=button.dataset.open;tab='docs';render()});
 }
+const riskMatrixDocuments=new Set(['PGR','APR','AEP','AET']);
+const riskLevels=[
+ {name:'Baixo',max:4,fill:'D5EBDD'},
+ {name:'Médio',max:9,fill:'FFF0AD'},
+ {name:'Alto',max:16,fill:'FFD5A8'},
+ {name:'Muito alto',max:25,fill:'F6B5B4'}
+];
+function riskMatrixBlocks(){
+ const columns=['Severidade × probabilidade','1 Muito improvável','2 Pouco provável','3 Possível','4 Provável','5 Muito provável'];
+ const severities=['Leve','Menor','Moderada','Maior','Muito grave'];
+ const rows=severities.map((label,i)=>[i+1+' '+label,...[1,2,3,4,5].map(p=>(i+1)*p)]).reverse();
+ const fills=rows.map(row=>[null,...row.slice(1).map(score=>riskLevels.find(level=>score<=level.max).fill)]);
+ return [
+  {kind:'heading',text:'Matriz de avaliação de riscos · 5 × 5'},
+  {kind:'paragraph',text:'Pontuação = probabilidade × severidade. Escalas de 1 a 5. Use as faixas abaixo somente quando forem compatíveis com a metodologia registrada para este documento.'},
+  {kind:'table',columns,rows:rows.map(row=>row.map(String)),fills,matrix:true},
+  {kind:'table',columns:['1–4','5–9','10–16','17–25'],rows:[riskLevels.map(level=>level.name)],fills:[riskLevels.map(level=>level.fill)],matrix:true},
+  {kind:'paragraph',text:'Referência para a grade 5 × 5: Manual de interpretação e aplicação do capítulo 1.5 da NR-1 (MTE), seção 11.5. Faixas de pontuação deste modelo: Viver SST.'}
+ ];
+}
 function editor(client){
  const values=client.docs[docType]||{};
  const tables=reportTables[docType]||[];
@@ -595,7 +646,7 @@ function editor(client){
  const activityLabel=item=>item.sector?item.sector+' / '+item.name:item.name;
  const activities=(client.activities||[]).map(activityLabel);
  const meta=[['code','Código','text'],['revision','Revisão','text'],['issued','Data de elaboração','date'],['reviewDate','Próxima revisão','date'],['reviewer','Responsável pela revisão','text']];
- get('workspace').innerHTML='<div class="editor-head"><div><h2>'+esc(titles[docType]||docType)+'</h2><p>'+esc(client.name)+' · Minuta editável</p></div><label>Modelo<select id="type">'+Object.keys(forms).map(name=>'<option '+(name===docType?'selected':'')+'>'+name+'</option>').join('')+'</select></label></div><p class="reference"><a href="'+esc(ref[1])+'" target="_blank" rel="noopener noreferrer">'+esc(ref[0])+'</a></p>'+(canImport?'<p><button type="button" id="apply-fieldwork">Aproveitar levantamento de campo</button></p>':'')+'<form id="doc"><div class="grid">'+meta.map(([name,label,type])=>'<label>'+label+'<input type="'+type+'" name="'+name+'" value="'+esc(values[name]??(name==='revision'?'00':''))+'"></label>').join('')+'</div><label>Atividades abrangidas<textarea name="scope">'+esc(values.scope??activities.join('\\n'))+'</textarea></label>'+forms[docType].map((label,i)=>'<label>'+esc(label)+'<textarea name="f'+i+'">'+esc(values['f'+i])+'</textarea></label>').join('')+tables.map(([label,columns],i)=>'<fieldset class="model-table"><legend>'+esc(label)+'</legend><div class="scroll"><table><thead><tr>'+columns.map(column=>'<th scope="col">'+esc(column)+'</th>').join('')+'<th scope="col">Linha</th></tr></thead><tbody id="table-'+i+'"></tbody></table></div><button type="button" data-add="'+i+'">Adicionar linha</button>'+(activities.length&&i===0&&['PGR','AEP','APR'].includes(docType)?'<button type="button" id="reuse">Inserir atividades cadastradas</button>':'')+'</fieldset>').join('')+'<div class="actions"><button class="primary">Salvar minuta</button><button type="button" id="preview">Visualizar documento</button><button type="button" id="pdf">Imprimir / PDF</button><button type="button" id="word">Baixar Word editável</button></div></form>';
+ get('workspace').innerHTML='<div class="editor-head"><div><h2>'+esc(titles[docType]||docType)+'</h2><p>'+esc(client.name)+' · Minuta editável</p></div><label>Modelo<select id="type">'+Object.keys(forms).map(name=>'<option '+(name===docType?'selected':'')+'>'+name+'</option>').join('')+'</select></label></div><p class="reference"><a href="'+esc(ref[1])+'" target="_blank" rel="noopener noreferrer">'+esc(ref[0])+'</a></p>'+(canImport?'<p><button type="button" id="apply-fieldwork">Aproveitar levantamento de campo</button></p>':'')+'<form id="doc"><div class="grid">'+meta.map(([name,label,type])=>'<label>'+label+'<input type="'+type+'" name="'+name+'" value="'+esc(values[name]??(name==='revision'?'00':''))+'"></label>').join('')+'</div><label>Atividades abrangidas<textarea name="scope">'+esc(values.scope??activities.join('\\n'))+'</textarea></label>'+(riskMatrixDocuments.has(docType)?'<fieldset class="model-table"><legend>Matriz de risco</legend><label><input type="checkbox" name="riskMatrix" '+(values.riskMatrix?'checked':'')+'> Incluir grade 5 × 5 no Word e no PDF</label><small>Marque quando a classificação adotada for compatível com as faixas do modelo (1–4, 5–9, 10–16 e 17–25).</small></fieldset>':'')+forms[docType].map((label,i)=>'<label>'+esc(label)+'<textarea name="f'+i+'">'+esc(values['f'+i])+'</textarea></label>').join('')+tables.map(([label,columns],i)=>'<fieldset class="model-table"><legend>'+esc(label)+'</legend><div class="scroll"><table><thead><tr>'+columns.map(column=>'<th scope="col">'+esc(column)+'</th>').join('')+'<th scope="col">Linha</th></tr></thead><tbody id="table-'+i+'"></tbody></table></div><button type="button" data-add="'+i+'">Adicionar linha</button>'+(activities.length&&i===0&&['PGR','AEP','APR'].includes(docType)?'<button type="button" id="reuse">Inserir atividades cadastradas</button>':'')+'</fieldset>').join('')+'<div class="actions"><button class="primary">Salvar minuta</button><button type="button" id="preview">Visualizar documento</button><button type="button" id="pdf">Imprimir / PDF</button><button type="button" id="word">Baixar Word editável</button></div></form>';
  function addRow(index,values=[]){
   const row=get('table-'+index).insertRow();
   tables[index][1].forEach((label,i)=>{
@@ -640,23 +691,29 @@ function editor(client){
  function report(){
   const data=persist(),value=text=>text?.trim()||pending;
   const section=(text,content)=>[{kind:'heading',text},{kind:'paragraph',text:value(content)}];
-  return [{kind:'title',text:titles[docType]||docType},{kind:'paragraph',text:'MINUTA PARA REVISÃO TÉCNICA'},
+  return [{kind:'title',text:titles[docType]||docType},{kind:'status',text:'Minuta para revisão técnica'},
    {kind:'table',columns:['Estabelecimento','CNPJ','CNAE'],rows:[[client.name,value(client.cnpj),value(client.cnae)]]},
    {kind:'paragraph',text:'Endereço: '+value(client.address)+'  |  Empregados: '+value(client.workers)},
    {kind:'table',columns:['Código','Revisão','Elaboração','Próxima revisão'],rows:[[value(data.code),value(data.revision),date(data.issued),date(data.reviewDate)]]},
    ...section('Atividades abrangidas',data.scope),
    ...forms[docType].flatMap((label,i)=>section(label,data['f'+i])),
-   ...tables.flatMap(([text,columns],i)=>[{kind:'heading',text},{kind:'table',columns,rows:(data.tables[i].length?data.tables[i]:[columns.map(()=>pending)]).map(row=>row.map(value))}]),
+   ...tables.flatMap(([text,columns],i)=>{
+    const rows=data.tables[i].map(row=>columns.map((_,j)=>value(row[j])));
+    const heading={kind:'heading',text};
+    if(!rows.length)return [heading,{kind:'paragraph',text:pending}];
+    if(columns.length<=5)return [heading,{kind:'table',columns,rows}];
+    return [heading,...rows.flatMap((row,j)=>[
+     {kind:'subheading',text:'Etapa '+(j+1)+(row[0]===pending?'':' · '+row[0])},
+     {kind:'table',columns:['Item de análise','Registro'],rows:columns.slice(1).map((col,k)=>[col,row[k+1]]),detail:true}
+    ])];
+   }),
+   ...(data.riskMatrix&&riskMatrixDocuments.has(docType)?riskMatrixBlocks():[]),
    ...section('Referência técnica',ref.join('\\n')),
    ...section('Responsável pela revisão',data.reviewer)];
  }
  function view(){
   const blocks=report();
-  get('paper').innerHTML='<div class="report-brand"><img src="/brand/logo-viver-positiva.png" alt="Viver Segurança no Trabalho"></div>'+blocks.map(block=>{
-   if(block.kind==='table')return '<div class="scroll"><table><thead><tr>'+block.columns.map(value=>'<th scope="col">'+esc(value)+'</th>').join('')+'</tr></thead><tbody>'+block.rows.map(row=>'<tr>'+row.map(value=>'<td>'+esc(value)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
-   const tag=block.kind==='title'?'h2':block.kind==='heading'?'h3':'p';
-   return '<'+tag+(block.text===pending?' class="pending"':'')+'>'+esc(block.text)+'</'+tag+'>';
-  }).join('');
+  get('paper').innerHTML=reportMarkup(blocks,docType);
   get('paper').hidden=false;get('paper').scrollIntoView();
  }
  get('preview').onclick=view;
@@ -664,30 +721,45 @@ function editor(client){
  get('word').onclick=()=>downloadWord(report(),docType).catch(()=>message('Não foi possível gerar o Word. Tente novamente.'));
 }
 
+function reportMarkup(blocks,name){
+ const content=blocks.map(block=>{
+  if(block.kind==='table')return '<div class="report-table'+(block.detail?' report-detail':'')+(block.matrix?' report-matrix':'')+'"><table><thead><tr>'+block.columns.map(value=>'<th scope="col">'+esc(value)+'</th>').join('')+'</tr></thead><tbody>'+block.rows.map((row,i)=>'<tr>'+row.map((value,j)=>'<td'+(value==='[PENDENTE]'?' class="pending"':'')+(block.fills?.[i]?.[j]?' style="background-color:#'+block.fills[i][j]+'"':'')+'>'+esc(value)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+  const tag=({title:'h2',heading:'h3',subheading:'h4'})[block.kind]||'p';
+  const style=block.kind==='status'?' class="report-status"':block.text==='[PENDENTE]'?' class="pending"':'';
+  return '<'+tag+style+'>'+esc(block.text)+'</'+tag+'>';
+ }).join('');
+ return '<div class="report-brand"><img src="/brand/logo-viver-positiva.png" alt="Viver Segurança no Trabalho"><div><strong>Viver SST</strong><span>'+esc(name)+'</span></div></div>'+content+'<div class="report-end">Viver SST · Gestão Documental</div>';
+}
 async function downloadWord(report,name){
  const response=await fetch('/brand/logo-viver-positiva.png');
  if(!response.ok) throw new Error('Logo indisponível');
  const logo=new Uint8Array(await response.arrayBuffer());
  const drawing='<w:p><w:r><w:drawing><wp:inline xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:extent cx="1143000" cy="864448"/><wp:docPr id="1" name="Viver SST"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="1" name="Viver SST"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1143000" cy="864448"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
  const xml=value=>esc(value.replace(/[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f]/g,''));
- function paragraph(value,{color='173B37',size=22,bold=false}={}){
-  return String(value).split(/\\r?\\n/).map(line=>'<w:p><w:r><w:rPr>'+ (bold?'<w:b/>':'')+'<w:color w:val="'+color+'"/><w:sz w:val="'+size+'"/></w:rPr><w:t xml:space="preserve">'+xml(line)+'</w:t></w:r></w:p>').join('');
+ function paragraph(value,{color='173B37',size=21,bold=false,keep=false,before=0,after=105,cell=false}={}){
+  const lines=String(value).split(/\\r?\\n/);
+  return lines.map((line,i)=>'<w:p><w:pPr>'+(keep?'<w:keepNext/><w:keepLines/>':'')+'<w:spacing w:before="'+(i===0?before:0)+'" w:after="'+(i===lines.length-1?after:0)+'" w:line="'+(cell?265:300)+'" w:lineRule="auto"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>'+ (bold?'<w:b/>':'')+'<w:color w:val="'+color+'"/><w:sz w:val="'+size+'"/></w:rPr><w:t xml:space="preserve">'+xml(line)+'</w:t></w:r></w:p>').join('');
  }
  function wordBlock(block){
-  if(block.kind==='title')return paragraph(block.text,{size:44,bold:true,color:'102F2C'});
-  if(block.kind==='heading')return paragraph(block.text,{size:28,bold:true,color:'18786C'});
+  if(block.kind==='title')return paragraph(block.text,{size:41,bold:true,color:'102F2C',keep:true,after:125});
+  if(block.kind==='status')return paragraph(block.text,{size:19,bold:true,color:'526863',keep:true,after:235});
+  if(block.kind==='heading')return paragraph(block.text,{size:27,bold:true,color:'18786C',keep:true,before:265,after:100});
+  if(block.kind==='subheading')return paragraph(block.text,{size:22,bold:true,color:'102F2C',keep:true,before:160,after:85});
   if(block.kind==='table'){
    const rows=[block.columns,...block.rows];
-   return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders><w:bottom w:val="single" w:sz="5" w:color="D9EAE7"/><w:insideH w:val="single" w:sz="5" w:color="D9EAE7"/><w:insideV w:val="single" w:sz="5" w:color="D9EAE7"/></w:tblBorders></w:tblPr>'+rows.map((row,i)=>'<w:tr>'+(i===0?'<w:trPr><w:tblHeader/></w:trPr>':'')+row.map(value=>'<w:tc><w:tcPr><w:tcW w:w="'+Math.floor(5000/block.columns.length)+'" w:type="pct"/>'+(i===0?'<w:shd w:fill="102F2C"/>':'')+'</w:tcPr>'+paragraph(value,{color:i===0?'FFFFFF':'173B37',size:20,bold:i===0})+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>';
+   const widths=block.detail?[1600,3400]:block.matrix&&block.columns.length===6?[1100,780,780,780,780,780]:block.columns.map(()=>Math.floor(5000/block.columns.length));
+   const border='<w:top w:val="single" w:sz="5" w:color="CBDDD8"/><w:left w:val="single" w:sz="5" w:color="CBDDD8"/><w:bottom w:val="single" w:sz="5" w:color="CBDDD8"/><w:right w:val="single" w:sz="5" w:color="CBDDD8"/><w:insideH w:val="single" w:sz="5" w:color="CBDDD8"/><w:insideV w:val="single" w:sz="5" w:color="CBDDD8"/>';
+   return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>'+border+'</w:tblBorders><w:tblCellMar><w:top w:w="85" w:type="dxa"/><w:left w:w="105" w:type="dxa"/><w:bottom w:w="85" w:type="dxa"/><w:right w:w="105" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>'+widths.map(width=>'<w:gridCol w:w="'+Math.round(width*10006/5000)+'"/>').join('')+'</w:tblGrid>'+rows.map((row,i)=>'<w:tr>'+(i===0?'<w:trPr><w:tblHeader/></w:trPr>':'')+row.map((value,j)=>'<w:tc><w:tcPr><w:tcW w:w="'+widths[j]+'" w:type="pct"/><w:shd w:fill="'+(block.fills?.[i-1]?.[j]||(i===0?'D3EBE5':i%2===0?'F2F8F6':'FFFFFF'))+'"/></w:tcPr>'+paragraph(value,{color:value==='[PENDENTE]'?'8E4800':'173B37',size:19,bold:i===0||Boolean(block.detail&&j===0),after:0,cell:true})+'</w:tc>').join('')+'</w:tr>').join('')+'</w:tbl>'+paragraph('',{size:8,after:0});
   }
   return paragraph(block.text,{color:block.text==='[PENDENTE]'?'8E4800':'173B37'});
  }
  const files={
-  '[Content_Types].xml':'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
+  '[Content_Types].xml':'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="png" ContentType="image/png"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
   '_rels/.rels':'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>',
   'word/media/logo.png':logo,
-  'word/_rels/document.xml.rels':'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/></Relationships>',
-   'word/document.xml':'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+drawing+report.map(wordBlock).join('')+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1050" w:right="1000" w:bottom="1050" w:left="1000"/></w:sectPr></w:body></w:document>' 
+  'word/footer1.xml':'<w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:r><w:t xml:space="preserve">Viver SST · Página </w:t></w:r><w:fldSimple w:instr="PAGE"/></w:p></w:ftr>',
+  'word/_rels/document.xml.rels':'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.png"/><Relationship Id="rIdFooter" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/></Relationships>',
+   'word/document.xml':'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+drawing+report.map(wordBlock).join('')+'<w:sectPr><w:footerReference xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" w:type="default" r:id="rIdFooter"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1000" w:right="900" w:bottom="1000" w:left="900"/></w:sectPr></w:body></w:document>' 
  };
  const encoder=new TextEncoder(),local=[],central=[];
  let offset=0,centralSize=0;
