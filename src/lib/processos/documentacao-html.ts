@@ -4,7 +4,7 @@ export const DOCUMENTACAO_HTML = `<!doctype html><html lang="pt-BR" data-storage
 header{background:white;color:#173b37;border-bottom:4px solid #2ca997;align-items:center}header span{color:#526863}.brand{display:flex;align-items:center;gap:20px}.brand img{width:100px;height:76px;object-fit:contain}.brand strong{border-left:1px solid #d9eae7;padding-left:20px}button.primary,button[aria-current=true]{background:#41e681;color:#102f2c;border-color:#2ca997}#paper img{display:block;width:100px;height:76px;object-fit:contain;margin-bottom:12px}#paper{border-top:4px solid #2ca997}@media print{#paper{border-top:4px solid #2ca997}}
 header{padding-block:10px}nav{padding:6px 0}.dashboard,.editor-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}.stats{display:flex;flex-wrap:wrap;gap:8px}.stats span{background:#e2faf1;border-radius:10px;padding:12px}.stats strong{display:block;font-size:1.5rem}.doc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}.doc-grid article{border:1px solid #d9eae7;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:flex-start}.doc-grid h4{margin:12px 0 4px;font-size:1.15rem}.doc-grid p{margin:0 0 12px;flex:1}.reference{background:#f5faf9;padding:8px 12px;border-left:3px solid #2ca997}.model-table{margin:16px 0;padding:12px}.model-table textarea{min-width:105px;min-height:58px}.model-table button{margin:8px 8px 0 0}#activity-list{padding-left:20px}#activity-list li{margin:8px 0}#paper{max-width:850px;margin-inline:auto;white-space:normal;padding:32px;box-shadow:0 12px 35px #102f2c14}#paper h2{font-size:2rem;margin:12px 0;color:#102f2c}#paper h3{color:#18786c;margin-top:22px}#paper p,#paper td{white-space:pre-wrap}#paper th{background:#102f2c;color:white}#paper .pending{color:#8e4800}#paper .report-brand{border-bottom:2px solid #2ca997;margin-bottom:14px}@media print{@page{size:A4;margin:14mm}#paper{padding:0;box-shadow:none}#paper .scroll{overflow:visible}#paper th{color:#102f2c;background:#e2faf1}#paper h3{break-after:avoid}#paper tr{break-inside:avoid}}
 
-.finding-card{margin:16px 0;padding:14px}.work-actions{margin-top:18px}</style>
+.finding-card{margin:16px 0;padding:14px}.work-actions{margin-top:18px}.import-field{margin:12px 0}.import-field small{white-space:pre-wrap;overflow-wrap:anywhere}.import-source{white-space:pre-wrap;overflow:auto;max-height:350px;background:#f5faf9;padding:14px}</style>
 <header><div class="brand"><img src="/brand/logo-viver-positiva.png" alt="Viver Segurança no Trabalho"><strong>Gestão documental</strong></div><a href="/clientes/processos">Voltar a Processos</a></header>
 <main><div id="intro"><h1>Documentação de SST</h1><p>Organize as exigências por estabelecimento e prepare minutas a partir das suas avaliações de campo.</p></div>
 <section id="clientbar"><div class="grid"><label>Estabelecimento ativo<select id="clients"></select></label><div class="actions" style="align-items:end;padding-bottom:12px"><button id="new" class="primary">Novo estabelecimento</button></div></div></section>
@@ -202,6 +202,144 @@ function fieldworkReport(work,type){
  };
 }
 
+const importTypes=['PGR','PCMSO','LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist'];
+const sectionAliases={
+ PGR:[['escopo','caracterização dos processos','caracterização dos ambientes'],['metodologia','critérios de avaliação'],['inventário de riscos','inventário de riscos ocupacionais'],['fatores psicossociais','riscos ergonômicos e psicossociais'],['medidas de controle','medidas existentes'],['plano de ação','cronograma de ações'],['monitoramento','avaliação da eficácia']],
+ AEP:[['caracterização da atividade','descrição da atividade'],['metodologia'],['exigências da atividade','organização do trabalho'],['participação dos trabalhadores'],['avaliação dos riscos','fatores de risco'],['recomendações','medidas propostas']],
+ AET:[['análise da demanda','demanda'],['análise da atividade','organização do trabalho'],['metodologia'],['participação dos trabalhadores'],['diagnóstico'],['recomendações','plano de intervenção'],['restituição dos resultados','validação']],
+ PCMSO:[['objetivo','abrangência'],['riscos ocupacionais'],['condutas médicas','critérios e condutas'],['vigilância da saúde'],['relatório analítico'],['médico responsável']],
+ LTCAT:[['finalidade','objetivo'],['descrição das atividades','ambientes e funções'],['fontes de exposição','periodicidade da exposição'],['metodologia','avaliações ambientais'],['medidas de controle'],['conclusão'],['responsável técnico']],
+ APR:[['atividade','local e equipe'],['etapas','etapas da atividade'],['perigos e consequências','perigos'],['medidas de controle','controles']],
+ 'Ordem de Serviço':[['atribuições','função'],['riscos ocupacionais'],['medidas de prevenção','orientações de segurança'],['procedimentos em caso de acidente','ciência']],
+ POP:[['objetivo','abrangência'],['responsabilidades'],['materiais','recursos necessários'],['procedimento','etapas','registros']],
+ DDS:[['tema'],['situação de trabalho'],['orientações']],
+ Checklist:[['atividade','equipamento'],['itens de inspeção'],['resultados','pendências'],['responsáveis e prazos']]
+};
+const normalizeHeading=value=>value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/^\\s*\\d+(?:\\.\\d+)*[.)]?\\s*[-–:]?\\s*/,'').trim();
+let pdfEngine;
+async function verifiedModule(file,expected){
+ const response=await fetch('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/'+file);
+ if(!response.ok)throw new Error('Leitor de PDF indisponível.');
+ const bytes=await response.arrayBuffer();
+ const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(n=>n.toString(16).padStart(2,'0')).join('');
+ if(hash!==expected)throw new Error('Não foi possível verificar a integridade do leitor de PDF.');
+ return URL.createObjectURL(new Blob([bytes],{type:'text/javascript'}));
+}
+async function readPdf(blob){
+ if(!pdfEngine)pdfEngine=(async()=>{
+  const [moduleUrl,workerUrl]=await Promise.all([verifiedModule('pdf.min.mjs','27fc2a057a00f92a4334ad06e17dbd7259912954e9fb7f76400bcca5fd190a9c'),verifiedModule('pdf.worker.min.mjs','1baa1844c89c80a5b2797c916e75ab29254be46d8e9cb53cb6364d7aad84be36')]);
+  const engine=await import(moduleUrl);
+  engine.GlobalWorkerOptions.workerSrc=workerUrl;
+  return engine;
+ })().catch(error=>{pdfEngine=null;throw error});
+ const engine=await pdfEngine;
+ const task=engine.getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false});
+ try{
+  const pdf=await task.promise,pages=[];
+  for(let i=1;i<=pdf.numPages;i++){
+   const page=await pdf.getPage(i),{items}=await page.getTextContent();
+   let text='',lastY=null;
+   for(const item of items){
+    if(typeof item.str!=='string')continue;
+    const y=item.transform[5];
+    if(lastY!==null&&Math.abs(y-lastY)>3&&!text.endsWith('\\n'))text+='\\n';
+    text+=item.str+(item.hasEOL?'\\n':' ');lastY=y;
+   }
+   pages.push({label:'Página '+i,text});
+  }
+  return pages;
+ }finally{await task.destroy()}
+}
+async function readDocx(blob){
+ const bytes=new Uint8Array(await blob.arrayBuffer()),zip=new DataView(bytes.buffer);
+ let end=bytes.length-22;
+ while(end>=Math.max(0,bytes.length-65557)&&zip.getUint32(end,true)!==0x06054b50)end--;
+ if(end<0||end<Math.max(0,bytes.length-65557))throw new Error('Arquivo Word inválido.');
+ let pos=zip.getUint32(end+16,true);
+ const decoder=new TextDecoder();
+ for(let i=0;i<zip.getUint16(end+10,true);i++){
+  if(zip.getUint32(pos,true)!==0x02014b50)break;
+  const nameLength=zip.getUint16(pos+28,true);
+  if(decoder.decode(bytes.subarray(pos+46,pos+46+nameLength))==='word/document.xml'){
+   const size=zip.getUint32(pos+20,true),local=zip.getUint32(pos+42,true),method=zip.getUint16(pos+10,true);
+   if(zip.getUint32(pos+24,true)>30*1024*1024)throw new Error('O conteúdo do Word excede o limite de leitura.');
+   const start=local+30+zip.getUint16(local+26,true)+zip.getUint16(local+28,true);
+   const part=bytes.slice(start,start+size);
+   if(method!==0&&method!==8)throw new Error('Compactação do Word incompatível.');
+   const xml=method===0?decoder.decode(part):await new Response(new Blob([part]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+   const doc=new DOMParser().parseFromString(xml,'application/xml');
+   const ns='http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+   return [{label:'Documento Word',text:[...doc.getElementsByTagNameNS(ns,'p')].map(p=>[...p.getElementsByTagNameNS(ns,'t')].map(t=>t.textContent).join('')).join('\\n')}];
+  }
+  pos+=46+nameLength+zip.getUint16(pos+30,true)+zip.getUint16(pos+32,true);
+ }
+ throw new Error('O arquivo Word não contém texto legível.');
+}
+async function readAttachment(item){
+ if(/\\.pdf$/i.test(item.name))return readPdf(item.blob);
+ if(/\\.docx$/i.test(item.name))return readDocx(item.blob);
+ return [{label:'Arquivo de texto',text:await item.blob.text()}];
+}
+function documentSuggestions(pages,type){
+ const output={};
+ const aliases=(sectionAliases[type]||[]).map((names,i)=>[i,[forms[type][i],...names].map(normalizeHeading)]);
+ let current=null;
+ for(const {text,label} of pages){
+  for(const line of text.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean)){
+   const id=line.match(/^(razão social|empresa|estabelecimento|cnpj|cnae(?: principal)?|endereço|(?:total|número) de (?:empregados|trabalhadores))\\s*[:–]\\s*(.+)$/i);
+   if(id){
+    const field=normalizeHeading(id[1]),key=field==='cnpj'?'cnpj':field.startsWith('cnae')?'cnae':field==='endereco'?'address':/^(total|numero)/.test(field)?'workers':'name';
+    const value=key==='workers'?id[2].match(/^\\d+(?=\\s|$)/)?.[0]:id[2].trim();
+    if(value&&!output[key])output[key]={value,source:label};
+    continue;
+   }
+   const parts=line.match(/^([^:]{1,115})(?::\\s*(.*))?$/);
+   const hit=parts&&aliases.find(([,names])=>names.includes(normalizeHeading(parts[1])));
+   if(hit){
+    current='f'+hit[0];
+    if(!output[current])output[current]={value:'',source:label};
+    if(parts[2])output[current].value+=(output[current].value?'\\n':'')+parts[2];
+   }else if(current&&output[current].value.length<16000){
+    if(!output[current].source.includes(label))output[current].source+='; '+label;
+    output[current].value+=(output[current].value?'\\n':'')+line;
+   }
+  }
+ }
+ return output;
+}
+function reviewImport(client,item,pages,panel){
+ const excerpt=pages.map(page=>'['+page.label+']\\n'+page.text).join('\\n\\n');
+ panel.innerHTML='<h3>Conferir dados de '+esc(item.name)+'</h3><label>Documento de destino<select id="import-type">'+importTypes.map(type=>'<option '+(type===item.category?'selected':'')+'>'+esc(type)+'</option>').join('')+'</select></label><details><summary>Consultar texto extraído</summary><pre class="import-source">'+esc(excerpt)+'</pre></details><div id="import-fields"></div>';
+ const selector=panel.querySelector('#import-type'),fields=panel.querySelector('#import-fields');
+ function show(){
+  const type=selector.value,hints=documentSuggestions(pages,type);
+  const definitions=[['name','Empresa / estabelecimento'],['cnpj','CNPJ'],['cnae','CNAE'],['address','Endereço'],['workers','Total de empregados'],...forms[type].map((label,i)=>['f'+i,label])];
+  fields.innerHTML='<p>Confira as sugestões e marque os campos que deseja aplicar. Você também pode colar trechos do texto extraído nos campos de destino.</p>'+definitions.map(([name,label])=>{
+   const hint=hints[name],old=name.startsWith('f')?client.docs[type]?.[name]:client[name];
+   return '<fieldset class="import-field" data-destination="'+name+'"><legend>'+esc(label)+'</legend><label><input type="checkbox" '+(hint?.value&&!old?'checked':'')+'>Aplicar neste campo</label>'+(old?'<small>Preenchimento atual: '+esc(old)+'</small>':'')+(hint?.value?'<small>Origem da sugestão: '+esc(hint.source)+'</small>':'')+'<textarea aria-label="'+esc(label)+'">'+esc(hint?.value)+'</textarea></fieldset>';
+  }).join('')+'<button type="button" class="primary">Aplicar campos selecionados</button>';
+  fields.querySelector('button').onclick=()=>{
+   const selected=[...fields.querySelectorAll('[data-destination]')].filter(el=>el.querySelector('input').checked&&el.querySelector('textarea').value.trim());
+   if(!selected.length){message('Selecione pelo menos um campo preenchido.');return}
+   const doc={...client.docs[type]};
+   const recordsForReview={...client};
+   for(const el of selected){
+    const name=el.dataset.destination,value=el.querySelector('textarea').value.trim();
+    if(name.startsWith('f'))doc[name]=value;
+    else recordsForReview[name]=value;
+   }
+   if(recordsForReview.workers&&!/^\\d+$/.test(recordsForReview.workers)){message('Informe um número inteiro no campo Total de empregados.');return}
+   recordsForReview.docs={...client.docs,[type]:doc};
+   const previous=records;
+   records=records.map(record=>record.id===client.id?recordsForReview:record);
+   if(!save()){records=previous;message('O navegador impediu o salvamento.');return}
+   docType=type;tab='docs';render();
+   message(selected.length+' campo(s) aplicado(s). Confira a minuta antes de emitir.');
+  };
+ }
+ selector.onchange=show;show();panel.scrollIntoView();
+}
+
 const attachmentCategories=['PGR','PCMSO','LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist','Laudo ou avaliação ambiental','Outros'];
 const attachmentExtensions=/\\.(pdf|docx?|xlsx?|csv|txt|jpe?g|png)$/i;
 function openAttachmentStore(){
@@ -227,7 +365,7 @@ async function attachmentTransaction(mode,operation){
  }finally{db.close()}
 }
 function attachments(client){
- get('workspace').innerHTML='<h2>Arquivos do cliente</h2><p>'+esc(client.name)+'</p><p>Anexe PGRs anteriores, laudos, planilhas e evidências. Os arquivos ficam neste navegador, vinculados à conta e ao estabelecimento.</p><form id="attachment-form"><div class="grid"><label>Tipo de documento<select name="category">'+attachmentCategories.map(name=>'<option>'+esc(name)+'</option>').join('')+'</select></label><label>Selecionar arquivos<input name="files" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png" multiple required></label></div><small>Até 25 MB por arquivo. Arquivos PDF, Word, Excel, CSV, TXT, JPG ou PNG.</small><div class="work-actions"><button class="primary">Anexar arquivos</button></div></form><h3>Documentos anexados</h3><div id="attachment-list" class="scroll" aria-live="polite">Carregando arquivos…</div>';
+ get('workspace').innerHTML='<h2>Arquivos do cliente</h2><p>'+esc(client.name)+'</p><p>Anexe PGRs anteriores, laudos, planilhas e evidências. Os arquivos ficam neste navegador, vinculados à conta e ao estabelecimento.</p><form id="attachment-form"><div class="grid"><label>Tipo de documento<select name="category">'+attachmentCategories.map(name=>'<option>'+esc(name)+'</option>').join('')+'</select></label><label>Selecionar arquivos<input name="files" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png" multiple required></label></div><small>Até 25 MB por arquivo. Arquivos PDF, Word, Excel, CSV, TXT, JPG ou PNG.</small><div class="work-actions"><button class="primary">Anexar arquivos</button></div></form><h3>Documentos anexados</h3><div id="attachment-list" class="scroll" aria-live="polite">Carregando arquivos…</div><section id="attachment-review" hidden></section>';
  const form=get('attachment-form'),list=get('attachment-list');
  const visible=()=>form.isConnected;
  async function refresh(){
@@ -236,7 +374,19 @@ function attachments(client){
    if(!visible())return;
    if(!items.length){list.textContent='Nenhum documento anexado a este estabelecimento.';return}
    items.sort((a,b)=>b.added.localeCompare(a.added));
-   list.innerHTML='<table><thead><tr><th scope="col">Arquivo</th><th scope="col">Tipo</th><th scope="col">Incluído em</th><th scope="col">Ações</th></tr></thead><tbody>'+items.map((item,i)=>'<tr><td>'+esc(item.name)+'<small>'+esc(new Intl.NumberFormat('pt-BR',{style:'unit',unit:'kilobyte',maximumFractionDigits:1}).format(item.blob.size/1000))+'</small></td><td>'+esc(item.category)+'</td><td>'+esc(new Date(item.added).toLocaleDateString('pt-BR'))+'</td><td><div class="actions"><button type="button" data-download="'+i+'">Baixar</button><button type="button" data-delete="'+i+'">Remover</button></div></td></tr>').join('')+'</tbody></table>';
+   list.innerHTML='<table><thead><tr><th scope="col">Arquivo</th><th scope="col">Tipo</th><th scope="col">Incluído em</th><th scope="col">Ações</th></tr></thead><tbody>'+items.map((item,i)=>'<tr><td>'+esc(item.name)+'<small>'+esc(new Intl.NumberFormat('pt-BR',{style:'unit',unit:'kilobyte',maximumFractionDigits:1}).format(item.blob.size/1000))+'</small></td><td>'+esc(item.category)+'</td><td>'+esc(new Date(item.added).toLocaleDateString('pt-BR'))+'</td><td><div class="actions">'+(/\\.(pdf|docx|txt|csv)$/i.test(item.name)?'<button type="button" data-import="'+i+'">Ler e preencher</button>':'')+'<button type="button" data-download="'+i+'">Baixar</button><button type="button" data-delete="'+i+'">Remover</button></div></td></tr>').join('')+'</tbody></table>';
+   list.querySelectorAll('[data-import]').forEach(button=>button.onclick=async()=>{
+    const item=items[Number(button.dataset.import)],panel=get('attachment-review');
+    list.querySelectorAll('[data-import]').forEach(control=>control.disabled=true);
+    panel.hidden=false;panel.textContent='Lendo '+item.name+'…';
+    try{
+     const pages=await readAttachment(item);
+     if(!visible())return;
+     if(!pages.some(page=>page.text.trim())){panel.textContent='Nenhum texto foi encontrado. Se for um PDF digitalizado, use uma versão pesquisável ou um arquivo Word.';return}
+     reviewImport(client,item,pages,panel);
+    }catch(error){if(visible())panel.textContent='Não foi possível ler o arquivo. '+(error?.message||'')}
+    finally{if(visible())list.querySelectorAll('[data-import]').forEach(control=>control.disabled=false)}
+   });
    list.querySelectorAll('[data-download]').forEach(button=>button.onclick=()=>{
     const item=items[Number(button.dataset.download)];
     const url=URL.createObjectURL(item.blob),link=document.createElement('a');
