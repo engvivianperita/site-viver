@@ -4,11 +4,11 @@ export const DOCUMENTACAO_HTML = `<!doctype html><html lang="pt-BR" data-storage
 header{background:white;color:#173b37;border-bottom:4px solid #2ca997;align-items:center}header span{color:#526863}.brand{display:flex;align-items:center;gap:20px}.brand img{width:100px;height:76px;object-fit:contain}.brand strong{border-left:1px solid #d9eae7;padding-left:20px}button.primary,button[aria-current=true]{background:#41e681;color:#102f2c;border-color:#2ca997}#paper img{display:block;width:100px;height:76px;object-fit:contain;margin-bottom:12px}#paper{border-top:4px solid #2ca997}@media print{#paper{border-top:4px solid #2ca997}}
 header{padding-block:10px}nav{padding:6px 0}.dashboard,.editor-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}.stats{display:flex;flex-wrap:wrap;gap:8px}.stats span{background:#e2faf1;border-radius:10px;padding:12px}.stats strong{display:block;font-size:1.5rem}.doc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}.doc-grid article{border:1px solid #d9eae7;border-radius:12px;padding:16px;display:flex;flex-direction:column;align-items:flex-start}.doc-grid h4{margin:12px 0 4px;font-size:1.15rem}.doc-grid p{margin:0 0 12px;flex:1}.reference{background:#f5faf9;padding:8px 12px;border-left:3px solid #2ca997}.model-table{margin:16px 0;padding:12px}.model-table textarea{min-width:105px;min-height:58px}.model-table button{margin:8px 8px 0 0}#activity-list{padding-left:20px}#activity-list li{margin:8px 0}#paper{max-width:850px;margin-inline:auto;white-space:normal;padding:32px;box-shadow:0 12px 35px #102f2c14}#paper h2{font-size:2rem;margin:12px 0;color:#102f2c}#paper h3{color:#18786c;margin-top:22px}#paper p,#paper td{white-space:pre-wrap}#paper th{background:#102f2c;color:white}#paper .pending{color:#8e4800}#paper .report-brand{border-bottom:2px solid #2ca997;margin-bottom:14px}@media print{@page{size:A4;margin:14mm}#paper{padding:0;box-shadow:none}#paper .scroll{overflow:visible}#paper th{color:#102f2c;background:#e2faf1}#paper h3{break-after:avoid}#paper tr{break-inside:avoid}}
 
-</style>
+.finding-card{margin:16px 0;padding:14px}.work-actions{margin-top:18px}</style>
 <header><div class="brand"><img src="/brand/logo-viver-positiva.png" alt="Viver Segurança no Trabalho"><strong>Gestão documental</strong></div><a href="/clientes/processos">Voltar a Processos</a></header>
 <main><div id="intro"><h1>Documentação de SST</h1><p>Organize as exigências por estabelecimento e prepare minutas a partir das suas avaliações de campo.</p></div>
 <section id="clientbar"><div class="grid"><label>Estabelecimento ativo<select id="clients"></select></label><div class="actions" style="align-items:end;padding-bottom:12px"><button id="new" class="primary">Novo estabelecimento</button></div></div></section>
-<nav aria-label="Áreas do app"><button data-tab="home">Painel</button><button data-tab="profile">Cadastro e atividades</button><button data-tab="matrix">Matriz de aplicabilidade</button><button data-tab="docs">Documentos</button></nav>
+<nav aria-label="Áreas do app"><button data-tab="home">Painel</button><button data-tab="profile">Cadastro e atividades</button><button data-tab="matrix">Matriz de aplicabilidade</button><button data-tab="fieldwork">PGR do zero</button><button data-tab="docs">Documentos</button></nav>
 <section id="workspace"></section><p id="status" role="status"></p><section id="paper" hidden></section>
 </main>
 <script>
@@ -76,6 +76,7 @@ function render(){
  if(tab==='profile'){profile(client);return}
  if(!client){get('workspace').innerHTML='<h2>Estabelecimento necessário</h2><p>Cadastre ou selecione um estabelecimento para continuar.</p>';return}
  if(tab==='matrix'){matrix(client);return}
+ if(tab==='fieldwork'){fieldwork(client);return}
  editor(client);
 }
 function profile(client){
@@ -108,6 +109,98 @@ function matrix(client){
  get('workspace').innerHTML='<h2>Matriz de aplicabilidade</h2><p>Triagem inicial para <strong>'+esc(client.name)+'</strong>. Confirme os requisitos e as exceções antes da emissão. <a href="'+official+'" target="_blank" rel="noopener">Consultar NRs oficiais</a></p><div class="scroll"><table><thead><tr><th>Documento ou registro</th><th>Referência</th><th>Triagem</th><th>Validação técnica</th></tr></thead><tbody>'+catalog.map(([name,ref,flag],i)=>'<tr><td>'+esc(name)+'</td><td>'+esc(ref)+'</td><td><span class="badge">'+(flag?(client.flags.includes(flag)?'Atividade identificada':'Atividade a confirmar'):'Verificar enquadramento')+'</span></td><td><select aria-label="Validação de '+esc(name)+'" data-check="'+i+'">'+['A validar','Aplicável','Não aplicável'].map(s=>'<option '+(client.checks[i]===s?'selected':'')+'>'+s+'</option>').join('')+'</select></td></tr>').join('')+'</tbody></table></div>';
  document.querySelectorAll('[data-check]').forEach(el=>el.onchange=()=>{client.checks[el.dataset.check]=el.value;message(save()?'Validação registrada.':'O navegador impediu o salvamento.')});
 }
+const visitChecklist=[
+ 'Relação de setores, funções, turnos e trabalhadores por atividade',
+ 'Descrição dos processos, máquinas, equipamentos e produtos químicos',
+ 'Registros de acidentes, incidentes e avaliações ambientais disponíveis',
+ 'Controles existentes, manutenção e registros de capacitação',
+ 'Observação das tarefas reais e escuta dos trabalhadores',
+ 'Organização, ritmo, pausas, exigências físicas e fatores psicossociais do trabalho'
+];
+const findingFields=[
+ ['activity','Setor / atividade'],['group','Funções ou grupo exposto'],
+ ['hazard','Perigo ou fator de risco'],['source','Fonte ou circunstância'],
+ ['exposure','Caracterização da exposição'],['harm','Possíveis lesões ou agravos'],
+ ['controls','Medidas existentes'],['evidence','Evidências e avaliações realizadas'],
+ ['level','Classificação e prioridade'],['measure','Medida proposta'],
+ ['owner','Responsável pela ação'],['deadline','Prazo','date'],['followup','Acompanhamento e eficácia']
+];
+const initialWork=()=>({step:0,profile:{},checklist:[],findings:[]});
+const asText=(...parts)=>parts.filter(Boolean).join('\\n');
+function fieldwork(client){
+ const work=client.fieldwork||initialWork();
+ const step=work.step;
+ const headings=['Enquadramento','Preparar a visita','Levantamento de campo','Revisão técnica'];
+ const inputs=[
+  [['applicability','Enquadramento do PGR'],['basis','Fundamento, exceções e requisitos setoriais'],['criteria','Critérios de avaliação e classificação dos riscos']],
+  [['visit','Data prevista da visita','date'],['contact','Contato e acompanhamento em campo'],['requests','Documentos a solicitar e roteiro complementar']],
+  [['conditions','Descrição dos ambientes, processos e atividades'],['workers','Participação dos trabalhadores e organização do trabalho'],['methods','Métodos, evidências e limitações da avaliação']],
+  []
+ ][step];
+ const field=([name,label,type])=>'<label>'+esc(label)+(type?'<input type="'+type+'" name="'+name+'" value="'+esc(work.profile[name])+'">':'<textarea name="'+name+'">'+esc(work.profile[name])+'</textarea>')+'</label>';
+ const ready=work.findings.filter(f=>f.reviewed&&f.activity&&f.hazard&&f.group);
+ get('workspace').innerHTML='<h2>Elaborar PGR do zero</h2><p>'+esc(client.name)+' · '+esc(headings[step])+'</p><nav aria-label="Etapas do levantamento">'+headings.map((title,i)=>'<button type="button" data-step="'+i+'" aria-current="'+(i===step)+'">'+esc(title)+'</button>').join('')+'</nav><form id="fieldwork">'+inputs.map(field).join('')+
+ (step===1?'<fieldset><legend>Roteiro básico de visita</legend>'+visitChecklist.map((item,i)=>'<label><input type="checkbox" name="check" value="'+i+'" '+(work.checklist.includes(String(i))?'checked':'')+'>'+esc(item)+'</label>').join('')+'<button type="button" id="print-visit">Imprimir roteiro / PDF</button></fieldset>':'')+
+ (step===2?'<p>Registre os achados por tarefa. Confirme os dados de cada registro antes de aproveitar na minuta.</p><div id="findings"></div><button type="button" id="add-finding">Adicionar achado</button>':'')+
+ (step===3?'<p><strong>'+ready.length+'</strong> de '+work.findings.length+' achados com dados conferidos e identificação mínima.</p><p>Confira o enquadramento e os critérios de avaliação. Registros com informações em aberto devem ser complementados na minuta. Os campos de classificação e de medidas dependem da avaliação profissional.</p><div class="actions"><button type="button" data-generate="PGR">Abrir minuta de PGR</button><button type="button" data-generate="AEP">Abrir minuta de AEP</button></div>':'')+
+ '<div class="actions work-actions"><button class="primary">Salvar etapa</button>'+(step<3?'<button type="button" id="next-step">Salvar e continuar</button>':'')+'</div></form>';
+ const form=get('fieldwork');
+ function findingCard(finding={}){
+  const card=document.createElement('fieldset');
+  card.className='finding-card';
+  card.innerHTML='<legend>Achado de campo</legend><div class="grid">'+findingFields.map(([name,label,type])=>'<label>'+label+'<input data-field="'+name+'" '+(type?'type="'+type+'"':'')+(name==='activity'?' list="visit-activities"':'')+' value="'+esc(finding[name])+'"></label>').join('')+'</div><label>Tipo de achado<select data-field="kind">'+['Geral','Ergonômico','Psicossocial'].map(item=>'<option '+(finding.kind===item?'selected':'')+'>'+item+'</option>').join('')+'</select></label><label><input type="checkbox" data-reviewed '+(finding.reviewed?'checked':'')+'> Dados deste achado conferidos</label><button type="button">Remover achado</button>';
+  card.querySelectorAll('[data-field]').forEach(input=>input.addEventListener('input',()=>{card.querySelector('[data-reviewed]').checked=false}));
+  card.querySelector('button').onclick=()=>card.remove();
+  get('findings').append(card);
+ }
+ if(step===2){
+  const list=document.createElement('datalist');list.id='visit-activities';
+  (client.activities||[]).forEach(item=>{const option=document.createElement('option');option.value=item.sector?item.sector+' / '+item.name:item.name;list.append(option)});
+  get('findings').append(list);
+  work.findings.forEach(findingCard);
+  get('add-finding').onclick=()=>findingCard();
+ }
+ function persist(next=step){
+  const data=new FormData(form);
+  inputs.forEach(([name])=>{work.profile[name]=data.get(name).trim()});
+  if(step===1) work.checklist=data.getAll('check');
+  if(step===2) work.findings=[...form.querySelectorAll('.finding-card')].map(card=>({
+   ...Object.fromEntries([...card.querySelectorAll('[data-field]')].map(el=>[el.dataset.field,el.value.trim()])),
+   reviewed:card.querySelector('[data-reviewed]').checked
+  })).filter(item=>findingFields.some(([name])=>item[name]));
+  work.step=next;client.fieldwork=work;
+  message(save()?'Levantamento salvo neste navegador.':'O navegador impediu o salvamento.');
+ }
+ form.onsubmit=event=>{event.preventDefault();persist()};
+ get('workspace').querySelectorAll('[data-step]').forEach(button=>button.onclick=()=>{persist(Number(button.dataset.step));render()});
+ if(get('next-step'))get('next-step').onclick=()=>{persist(step+1);render()};
+ if(get('print-visit'))get('print-visit').onclick=async()=>{
+  persist();
+  const paper=get('paper');
+  paper.innerHTML='<div class="report-brand"><img src="/brand/logo-viver-positiva.png" alt="Viver SST"></div><h2>Roteiro de visita técnica</h2><p>'+esc(client.name)+' · '+esc(work.profile.visit||'Data a definir')+'</p><p>'+esc(work.profile.contact)+'</p><ul>'+visitChecklist.map((item,i)=>'<li>'+ (work.checklist.includes(String(i))?'☑ ':'☐ ')+esc(item)+'</li>').join('')+'</ul><p>'+esc(work.profile.requests)+'</p>';
+  paper.hidden=false;await paper.querySelector('img').decode().catch(()=>{});window.print();
+ };
+ get('workspace').querySelectorAll('[data-generate]').forEach(button=>button.onclick=()=>{persist();docType=button.dataset.generate;tab='docs';render()});
+}
+function fieldworkReport(work,type){
+ const rows=work.findings.filter(f=>f.reviewed&&f.activity&&f.hazard&&f.group);
+ const p=work.profile;
+ if(type==='AEP'){
+  const ergonomic=rows.filter(f=>f.kind==='Ergonômico'||f.kind==='Psicossocial');
+  return {
+   fields:{f0:p.conditions,f1:p.methods,f3:p.workers},
+   tables:[ergonomic.map(f=>[f.activity,asText(f.hazard,f.source),asText(f.group,f.exposure,f.evidence,f.level),asText(f.controls,f.measure)])]
+  };
+ }
+ return {
+  fields:{f0:p.conditions,f1:p.criteria},
+  tables:[
+   rows.map(f=>[f.activity,asText(f.hazard,f.source),asText(f.group,f.exposure,f.evidence),asText(f.harm,f.controls),f.level]),
+   rows.filter(f=>f.measure).map(f=>[f.activity+' — '+f.measure,f.owner,f.deadline,f.followup])
+  ]
+ };
+}
+
 function dashboard(client){
  if(!client){get('workspace').innerHTML='<h2>Painel documental</h2><p>Cadastre um estabelecimento para começar.</p>';return}
  const docs=Object.entries(client.docs);
@@ -119,12 +212,13 @@ function editor(client){
  const values=client.docs[docType]||{};
  const tables=reportTables[docType]||[];
  const ref=references[docType];
+ const canImport=client.fieldwork&&['PGR','AEP'].includes(docType);
  const pending='[PENDENTE]';
  const date=value=>value?value.split('-').reverse().join('/'):pending;
  const activityLabel=item=>item.sector?item.sector+' / '+item.name:item.name;
  const activities=(client.activities||[]).map(activityLabel);
  const meta=[['code','Código','text'],['revision','Revisão','text'],['issued','Data de elaboração','date'],['reviewDate','Próxima revisão','date'],['reviewer','Responsável pela revisão','text']];
- get('workspace').innerHTML='<div class="editor-head"><div><h2>'+esc(titles[docType]||docType)+'</h2><p>'+esc(client.name)+' · Minuta editável</p></div><label>Modelo<select id="type">'+Object.keys(forms).map(name=>'<option '+(name===docType?'selected':'')+'>'+name+'</option>').join('')+'</select></label></div><p class="reference"><a href="'+esc(ref[1])+'" target="_blank" rel="noopener noreferrer">'+esc(ref[0])+'</a></p><form id="doc"><div class="grid">'+meta.map(([name,label,type])=>'<label>'+label+'<input type="'+type+'" name="'+name+'" value="'+esc(values[name]??(name==='revision'?'00':''))+'"></label>').join('')+'</div><label>Atividades abrangidas<textarea name="scope">'+esc(values.scope??activities.join('\\n'))+'</textarea></label>'+forms[docType].map((label,i)=>'<label>'+esc(label)+'<textarea name="f'+i+'">'+esc(values['f'+i])+'</textarea></label>').join('')+tables.map(([label,columns],i)=>'<fieldset class="model-table"><legend>'+esc(label)+'</legend><div class="scroll"><table><thead><tr>'+columns.map(column=>'<th scope="col">'+esc(column)+'</th>').join('')+'<th scope="col">Linha</th></tr></thead><tbody id="table-'+i+'"></tbody></table></div><button type="button" data-add="'+i+'">Adicionar linha</button>'+(activities.length&&i===0&&['PGR','AEP','APR'].includes(docType)?'<button type="button" id="reuse">Inserir atividades cadastradas</button>':'')+'</fieldset>').join('')+'<div class="actions"><button class="primary">Salvar minuta</button><button type="button" id="preview">Visualizar documento</button><button type="button" id="pdf">Imprimir / PDF</button><button type="button" id="word">Baixar Word editável</button></div></form>';
+ get('workspace').innerHTML='<div class="editor-head"><div><h2>'+esc(titles[docType]||docType)+'</h2><p>'+esc(client.name)+' · Minuta editável</p></div><label>Modelo<select id="type">'+Object.keys(forms).map(name=>'<option '+(name===docType?'selected':'')+'>'+name+'</option>').join('')+'</select></label></div><p class="reference"><a href="'+esc(ref[1])+'" target="_blank" rel="noopener noreferrer">'+esc(ref[0])+'</a></p>'+(canImport?'<p><button type="button" id="apply-fieldwork">Aproveitar levantamento de campo</button></p>':'')+'<form id="doc"><div class="grid">'+meta.map(([name,label,type])=>'<label>'+label+'<input type="'+type+'" name="'+name+'" value="'+esc(values[name]??(name==='revision'?'00':''))+'"></label>').join('')+'</div><label>Atividades abrangidas<textarea name="scope">'+esc(values.scope??activities.join('\\n'))+'</textarea></label>'+forms[docType].map((label,i)=>'<label>'+esc(label)+'<textarea name="f'+i+'">'+esc(values['f'+i])+'</textarea></label>').join('')+tables.map(([label,columns],i)=>'<fieldset class="model-table"><legend>'+esc(label)+'</legend><div class="scroll"><table><thead><tr>'+columns.map(column=>'<th scope="col">'+esc(column)+'</th>').join('')+'<th scope="col">Linha</th></tr></thead><tbody id="table-'+i+'"></tbody></table></div><button type="button" data-add="'+i+'">Adicionar linha</button>'+(activities.length&&i===0&&['PGR','AEP','APR'].includes(docType)?'<button type="button" id="reuse">Inserir atividades cadastradas</button>':'')+'</fieldset>').join('')+'<div class="actions"><button class="primary">Salvar minuta</button><button type="button" id="preview">Visualizar documento</button><button type="button" id="pdf">Imprimir / PDF</button><button type="button" id="word">Baixar Word editável</button></div></form>';
  function addRow(index,values=[]){
   const row=get('table-'+index).insertRow();
   tables[index][1].forEach((label,i)=>{
@@ -138,6 +232,24 @@ function editor(client){
  if(get('reuse'))get('reuse').onclick=()=>{
   const existing=[...get('table-0').rows].map(row=>row.querySelector('textarea').value.trim());
   activities.filter(value=>!existing.includes(value)).forEach(value=>addRow(0,[value]));
+ };
+ if(get('apply-fieldwork'))get('apply-fieldwork').onclick=()=>{
+  const incoming=fieldworkReport(client.fieldwork,docType);
+  for(const [name,value] of Object.entries(incoming.fields)){
+   const input=get('doc').elements.namedItem(name);
+   if(value&&!input.value.trim())input.value=value;
+  }
+  let count=0;
+  incoming.tables.forEach((rows,index)=>{
+   const existing=new Set([...get('table-'+index).rows].map(row=>JSON.stringify([...row.querySelectorAll('textarea')].map(input=>input.value.trim()))));
+   rows.forEach(row=>{
+    const id=JSON.stringify(row);
+    if(existing.has(id))return;
+    addRow(index,row);existing.add(id);count++;
+   });
+  });
+  persist();
+  message(count?count+' linha(s) do levantamento inserida(s). Confira o conteúdo antes da emissão.':'Nenhuma nova linha para inserir. Confira os campos da minuta.');
  };
  get('type').onchange=event=>{persist();docType=event.target.value;render()};
  function persist(){
