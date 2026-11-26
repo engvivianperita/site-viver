@@ -225,7 +225,35 @@ async function verifiedModule(file,expected){
  if(hash!==expected)throw new Error('Não foi possível verificar a integridade do leitor de PDF.');
  return URL.createObjectURL(new Blob([bytes],{type:'text/javascript'}));
 }
-async function readPdf(blob){
+let ocrLibrary;
+function loadOcr(){
+ if(!ocrLibrary)ocrLibrary=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src='https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/tesseract.min.js';
+  script.integrity='sha256-EP/3hIQGd1nEMCigKnLXbQuQ6xcwK7I7WKnsVBC8kos=';
+  script.crossOrigin='anonymous';
+  script.onload=()=>{
+   if(window.Tesseract?.createWorker)resolve(window.Tesseract);
+   else reject(new Error('O leitor OCR não pôde ser iniciado.'));
+  };
+  script.onerror=()=>{script.remove();reject(new Error('O leitor OCR está indisponível. Confira a conexão e tente novamente.'))};
+  document.head.append(script);
+ }).catch(error=>{ocrLibrary=null;throw error});
+ return ocrLibrary;
+}
+async function recognizePage(page,worker){
+ const initial=page.getViewport({scale:1});
+ const scale=Math.min(2.4,Math.sqrt(5500000/(initial.width*initial.height)));
+ const viewport=page.getViewport({scale});
+ const canvas=document.createElement('canvas');
+ canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+ try{
+  await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;
+  const result=await worker.recognize(canvas);
+  return result.data.text||'';
+ }finally{canvas.width=0;canvas.height=0}
+}
+async function readPdf(blob,onProgress){
  if(!pdfEngine)pdfEngine=(async()=>{
   const [moduleUrl,workerUrl]=await Promise.all([verifiedModule('pdf.min.mjs','27fc2a057a00f92a4334ad06e17dbd7259912954e9fb7f76400bcca5fd190a9c'),verifiedModule('pdf.worker.min.mjs','1baa1844c89c80a5b2797c916e75ab29254be46d8e9cb53cb6364d7aad84be36')]);
   const engine=await import(moduleUrl);
@@ -234,6 +262,8 @@ async function readPdf(blob){
  })().catch(error=>{pdfEngine=null;throw error});
  const engine=await pdfEngine;
  const task=engine.getDocument({data:new Uint8Array(await blob.arrayBuffer()),isEvalSupported:false});
+ let worker=null;
+ let stage="PDF";
  try{
   const pdf=await task.promise,pages=[];
   for(let i=1;i<=pdf.numPages;i++){
@@ -245,10 +275,33 @@ async function readPdf(blob){
     if(lastY!==null&&Math.abs(y-lastY)>3&&!text.endsWith('\\n'))text+='\\n';
     text+=item.str+(item.hasEOL?'\\n':' ');lastY=y;
    }
+   if(text.replace(/[^\\p{L}\\p{N}]/gu,'').length<35){
+    stage='OCR';
+    onProgress?.('Reconhecendo texto na página '+i+' de '+pdf.numPages+'…');
+    if(!worker){
+     const engine=await loadOcr();
+     worker=await engine.createWorker('por',1,{
+      workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/worker.min.js',
+      corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0',
+      langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/por@1.0.0/4.0.0_best_int'
+     });
+    }
+    const recognized=await recognizePage(page,worker);
+    if(recognized.trim().length>text.trim().length){
+     pages.push({label:'Página '+i+' · OCR',text:recognized});
+     continue;
+    }
+   }
    pages.push({label:'Página '+i,text});
   }
   return pages;
- }finally{await task.destroy()}
+ }catch(error){
+  if(stage==='OCR')throw new Error('Falha no reconhecimento de texto do PDF. Confira a conexão e tente novamente.');
+  throw error;
+ }finally{
+  if(worker)await worker.terminate().catch(()=>{});
+  await task.destroy();
+ }
 }
 async function readDocx(blob){
  const bytes=new Uint8Array(await blob.arrayBuffer()),zip=new DataView(bytes.buffer);
@@ -275,8 +328,8 @@ async function readDocx(blob){
  }
  throw new Error('O arquivo Word não contém texto legível.');
 }
-async function readAttachment(item){
- if(/\\.pdf$/i.test(item.name))return readPdf(item.blob);
+async function readAttachment(item,onProgress){
+ if(/\\.pdf$/i.test(item.name))return readPdf(item.blob,onProgress);
  if(/\\.docx$/i.test(item.name))return readDocx(item.blob);
  return [{label:'Arquivo de texto',text:await item.blob.text()}];
 }
@@ -310,6 +363,9 @@ function documentSuggestions(pages,type){
 function reviewImport(client,item,pages,panel){
  const excerpt=pages.map(page=>'['+page.label+']\\n'+page.text).join('\\n\\n');
  panel.innerHTML='<h3>Conferir dados de '+esc(item.name)+'</h3><label>Documento de destino<select id="import-type">'+importTypes.map(type=>'<option '+(type===item.category?'selected':'')+'>'+esc(type)+'</option>').join('')+'</select></label><details><summary>Consultar texto extraído</summary><pre class="import-source">'+esc(excerpt)+'</pre></details><div id="import-fields"></div>';
+ if(pages.some(page=>page.label.endsWith('OCR'))){
+  const notice=document.createElement('p');notice.textContent='Este PDF foi lido por OCR. Confira nomes, valores e a separação dos campos com o original.';panel.querySelector('details').before(notice);
+ }
  const selector=panel.querySelector('#import-type'),fields=panel.querySelector('#import-fields');
  function show(){
   const type=selector.value,hints=documentSuggestions(pages,type);
@@ -380,9 +436,9 @@ function attachments(client){
     list.querySelectorAll('[data-import]').forEach(control=>control.disabled=true);
     panel.hidden=false;panel.textContent='Lendo '+item.name+'…';
     try{
-     const pages=await readAttachment(item);
+     const pages=await readAttachment(item,status=>{if(visible())panel.textContent=status});
      if(!visible())return;
-     if(!pages.some(page=>page.text.trim())){panel.textContent='Nenhum texto foi encontrado. Se for um PDF digitalizado, use uma versão pesquisável ou um arquivo Word.';return}
+     if(!pages.some(page=>page.text.trim())){panel.textContent='O leitor não conseguiu reconhecer texto neste arquivo. Tente uma digitalização mais nítida ou uma versão em Word.';return}
      reviewImport(client,item,pages,panel);
     }catch(error){if(visible())panel.textContent='Não foi possível ler o arquivo. '+(error?.message||'')}
     finally{if(visible())list.querySelectorAll('[data-import]').forEach(control=>control.disabled=false)}
