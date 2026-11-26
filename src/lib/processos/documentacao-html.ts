@@ -31,8 +31,16 @@ const forms={
 };
 forms.PCMSO=['Objetivo e abrangência','Riscos do PGR e possíveis agravos','Critérios e condutas médicas','Vigilância da saúde e encaminhamentos','Planejamento do relatório analítico','Médico responsável e CRM'];
 forms.LTCAT=['Tipo de laudo e finalidade','Ambientes, setores, funções e atividades','Fontes e vias de exposição e periodicidade','Metodologia, datas e evidências das avaliações','Descrição e eficácia das medidas de controle','Conclusão previdenciária fundamentada','Profissional habilitado, registro e responsabilidade técnica'];
+const analytical='Relatório Analítico do PCMSO';
+forms.PGR.push('Introdução, objetivo e base legal','Responsabilidades','Identificação de perigos e avaliação de riscos','Análise de acidentes e doenças relacionadas ao trabalho','Capacitação e treinamento','Preparação para emergências','Implementação, conclusão e controle de revisões');
+forms.AEP.push('Objetivo e base legal','Análise ergonômica preliminar por função','Considerações gerais e recomendações','Conclusão e necessidade de AET');
+forms.PCMSO.push('Desenvolvimento e planejamento do PCMSO','Documentação, registros e ASO','Operacionalização e exames médicos ocupacionais','Exames complementares: justificativa e interpretação','Quadro de grupos homogêneos de exposição (GHE)','Cronograma e considerações finais');
+forms.LTCAT.push('Introdução e fundamentação legal','Descrição do ambiente de trabalho','Setores, funções e atividades analisadas');
+forms[analytical]=['Período de referência e data do relatório anterior','Médico responsável e CRM','Fundamentação legal','Funções e grupos abrangidos','Número de exames clínicos por tipo','Número e tipos de exames complementares','Resultados anormais por exame e unidade, setor ou função','Resultados agregados de aptidão','Incidência e prevalência de doenças relacionadas ao trabalho','Eventos e doenças informados em CAT','Comparação com o relatório anterior','Conclusão técnica','Recomendações e ações'];
 catalog.push(['Registros de revisão e evidências','Conforme o documento']);
+catalog.push([analytical,'NR-07 · 7.6.2']);
 const titles={PGR:'Programa de Gerenciamento de Riscos',AEP:'Avaliação Ergonômica Preliminar',AET:'Análise Ergonômica do Trabalho',APR:'Análise Preliminar de Riscos',PCMSO:'Programa de Controle Médico de Saúde Ocupacional',LTCAT:'Laudo Técnico das Condições Ambientais do Trabalho',POP:'Procedimento Operacional Padrão',DDS:'Diálogo Diário de Segurança',Checklist:'Checklist de inspeção'};
+titles[analytical]=analytical;
 const reportTables={
  PGR:[['Inventário de riscos',['Setor / atividade','Perigo e fonte','Expostos / exposição','Agravos e controles','Classificação / prioridade']],['Plano de ação',['Medida','Responsável','Prazo','Acompanhamento e eficácia']]],
  AEP:[['Avaliação por situação de trabalho',['Setor / atividade','Fatores de risco','Evidência e avaliação','Medidas e encaminhamento']]],
@@ -43,12 +51,14 @@ const reportTables={
  DDS:[['Registro de participação',['Nome','Função','Assinatura']]],
  Checklist:[['Itens de inspeção',['Item / critério','Situação','Evidência','Ação e prazo']]],
  PCMSO:[['Planejamento médico',['Grupo / função','Risco ocupacional','Exame / periodicidade','Critérios e condutas']]],
+ [analytical]:[['Consolidação de exames',['Exame','Unidade, setor ou função','Realizados','Resultados anormais']],['Comparação e encaminhamentos',['Indicador','Período anterior','Período atual','Análise e ação']]],
  LTCAT:[['Avaliações ambientais',['Setor / função','Agente / fonte','Método e resultado','Controles','Evidência']]],
 };
 const references={
  PGR:['NR-01 · Capítulo 1.5 — GRO','https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/manuais-e-publicacoes/2026/manual_gro_pgr_da_nr_1.pdf'],
  AEP:['NR-17 · Item 17.3 / Manual do GRO','https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/manuais-e-publicacoes/2026/manual_gro_pgr_da_nr_1.pdf'],
  AET:['NR-17 · Itens 17.3.2 e 17.3.3','https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadoras/normas-regulamentadoras-vigentes/norma-regulamentadora-no-17-nr-17'],
+ [analytical]:['NR-07 · Item 7.6.2','https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadora/normas-regulamentadoras-vigentes/nr-07-atualizada-2022.pdf'],
  PCMSO:['NR-07 · Planejamento e documentação','https://www.gov.br/trabalho-e-emprego/pt-br/acesso-a-informacao/participacao-social/conselhos-e-orgaos-colegiados/comissao-tripartite-partitaria-permanente/normas-regulamentadoras/normas-regulamentadoras-vigentes/norma-regulamentadora-no-7-nr-7'],
  LTCAT:['IN PRES/INSS nº 128/2022 · Art. 276','https://portalin.inss.gov.br/in/214'],
  APR:['Modelo de APR · HU-UFGD/Ebserh','https://www.gov.br/hubrasil/pt-br/hospitais-universitarios/regiao-centro-oeste/hu-ufgd/governanca/administracao/AnexoResoluo37MANUALDEPROCEDIMENTOSDESEGURANADOTRABALHOPARAEMPRESASPRESTADORASDESERVIOS.pdf'],
@@ -202,7 +212,7 @@ function fieldworkReport(work,type){
  };
 }
 
-const importTypes=['PGR','PCMSO','LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist'];
+const importTypes=['PGR','PCMSO',analytical,'LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist'];
 const sectionAliases={
  PGR:[['escopo','caracterização dos processos','caracterização dos ambientes'],['metodologia','critérios de avaliação'],['inventário de riscos','inventário de riscos ocupacionais'],['fatores psicossociais','riscos ergonômicos e psicossociais'],['medidas de controle','medidas existentes'],['plano de ação','cronograma de ações'],['monitoramento','avaliação da eficácia']],
  AEP:[['caracterização da atividade','descrição da atividade'],['metodologia'],['exigências da atividade','organização do trabalho'],['participação dos trabalhadores'],['avaliação dos riscos','fatores de risco'],['recomendações','medidas propostas']],
@@ -215,6 +225,21 @@ const sectionAliases={
  DDS:[['tema'],['situação de trabalho'],['orientações']],
  Checklist:[['atividade','equipamento'],['itens de inspeção'],['resultados','pendências'],['responsáveis e prazos']]
 };
+sectionAliases.PGR[0].push('descrição geral das atividades');
+sectionAliases.PGR[1].push('definições e critérios para avaliação de riscos','matriz de risco – critérios utilizados');
+sectionAliases.PGR[2].push('ambientes, cargos e inventário de riscos ocupacionais','tabela técnica – inventário de riscos');
+sectionAliases.PGR[4].push('medidas de prevenção');
+sectionAliases.PGR[5].push('planos de ação','plano de ação detalhado');
+sectionAliases.PGR.push(['introdução','fundamentação legal'],['responsabilidades'],['processo de identificação de perigos e avaliações de riscos ocupacionais','processo de identificação dos perigos e avaliações dos riscos'],['análise de acidentes e doenças relacionadas ao trabalho'],['capacitação e treinamento em segurança e saúde no trabalho'],['preparação para emergências'],['garantia de implementação do programa de gerenciamento de risco','considerações finais','conclusão','índice de revisões','encerramento']);
+sectionAliases.AEP.push(['objetivo da aep','base legal'],['análise ergonômica preliminar por função','análise ergonômica por função'],['considerações gerais e recomendações adicionais'],['conclusão e necessidade de aet']);
+sectionAliases.PCMSO[4].push('sobre o relatório analítico');
+sectionAliases.PCMSO[1].push('reconhecimento dos riscos e exames ocupacionais','riscos ocupacionais e seus possíveis agravos à saúde x exames complementares');
+sectionAliases.PCMSO.push(['desenvolvimento do pcmso','planejamento'],['documentação','aso – atestado de saúde ocupacional'],['operacionalização','exames médicos ocupacionais'],['exames complementares','exames complementares: justificativa e interpretação'],['quadro de ghe (grupo homogêneo de exposição)'],['cronograma de ação','considerações finais']);
+sectionAliases.LTCAT[3].push('metodologia utilizada');
+sectionAliases.LTCAT[5].push('conclusão técnica');
+sectionAliases.LTCAT[6].push('responsabilidade técnica');
+sectionAliases.LTCAT.push(['introdução','fundamentação legal'],['descrição do ambiente de trabalho'],['setores, funções e atividades analisadas']);
+sectionAliases[analytical]=[['período de referência','período analisado'],['médico responsável pelo pcmso'],['fundamentação legal'],['funções previstas no pcmso'],['tipos de exames realizados no período'],['exames complementares registrados'],['resultados anormais'],['resultados de aptidão'],['análise epidemiológica'],['cat','comunicação de acidente de trabalho'],['comparação com o relatório anterior'],['conclusão técnica'],['recomendações']];
 const normalizeHeading=value=>value.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/^\\s*\\d+(?:\\.\\d+)*[.)]?\\s*[-–:]?\\s*/,'').trim();
 let pdfEngine;
 async function verifiedModule(file,expected){
@@ -347,10 +372,12 @@ async function readAttachment(item,onProgress){
 }
 function documentSuggestions(pages,type){
  const output={};
- const aliases=(sectionAliases[type]||[]).map((names,i)=>[i,[forms[type][i],...names].map(normalizeHeading)]);
+ const aliases=(sectionAliases[type]||[]).flatMap((names,i)=>[forms[type][i],...names].map(name=>[normalizeHeading(name),i]));
  let current=null;
  for(const {text,label} of pages){
   for(const line of text.split(/\\r?\\n/).map(s=>s.trim()).filter(Boolean)){
+   if(/\\.{3,}\\s*\\d*\\s*$/.test(line))continue;
+   if(/^(sumario|identificacao da empresa|trabalhadores avaliados)(?:$|\\s|:)/.test(normalizeHeading(line))){current=null;continue}
    const id=line.match(/^(razão social|empresa|estabelecimento|cnpj|cnae(?: principal)?|endereço|(?:total|número) de (?:empregados|trabalhadores))\\s*[:–]\\s*(.+)$/i);
    if(id){
     const field=normalizeHeading(id[1]),key=field==='cnpj'?'cnpj':field.startsWith('cnae')?'cnae':field==='endereco'?'address':/^(total|numero)/.test(field)?'workers':'name';
@@ -358,12 +385,14 @@ function documentSuggestions(pages,type){
     if(value&&!output[key])output[key]={value,source:label};
     continue;
    }
-   const parts=line.match(/^([^:]{1,115})(?::\\s*(.*))?$/);
-   const hit=parts&&aliases.find(([,names])=>names.includes(normalizeHeading(parts[1])));
+   const heading=normalizeHeading(line).replace(/:$/,'').trim();
+   const parts=line.match(/^([^:]{1,150}):\\s*(.*)$/);
+   const hit=aliases.find(([name])=>name===heading)||(parts&&aliases.find(([name])=>name===normalizeHeading(parts[1])));
    if(hit){
-    current='f'+hit[0];
+    current='f'+hit[1];
     if(!output[current])output[current]={value:'',source:label};
-    if(parts[2])output[current].value+=(output[current].value?'\\n':'')+parts[2];
+    if(!output[current].source.includes(label))output[current].source+='; '+label;
+    if(parts?.[2]&&heading!==hit[0])output[current].value+=(output[current].value?'\\n':'')+parts[2];
    }else if(current&&output[current].value.length<16000){
     if(!output[current].source.includes(label))output[current].source+='; '+label;
     output[current].value+=(output[current].value?'\\n':'')+line;
@@ -373,18 +402,22 @@ function documentSuggestions(pages,type){
  return output;
 }
 function reviewImport(client,item,pages,panel,onApplied){
+ const analyticalTitle=/relat[oó]rio[\\s_-]+(?:anual[\\s_-]+)?anal[ií]tico/i;
+ const suggestedType=analyticalTitle.test(item.name)||pages.some(page=>analyticalTitle.test(page.text))&&item.category==='Outros'?analytical:item.category;
  const excerpt=pages.map(page=>'['+page.label+']\\n'+page.text).join('\\n\\n');
- panel.innerHTML='<h3>Conferir dados de '+esc(item.name)+'</h3><label>Documento de destino<select id="import-type">'+importTypes.map(type=>'<option '+(type===item.category?'selected':'')+'>'+esc(type)+'</option>').join('')+'</select></label><details><summary>Consultar texto extraído</summary><pre class="import-source">'+esc(excerpt)+'</pre></details><div id="import-fields"></div>';
+ panel.innerHTML='<h3>Conferir dados de '+esc(item.name)+'</h3><label>Documento de destino<select id="import-type">'+importTypes.map(type=>'<option '+(type===suggestedType?'selected':'')+'>'+esc(type)+'</option>').join('')+'</select></label><details><summary>Consultar texto extraído</summary><pre class="import-source">'+esc(excerpt)+'</pre></details><div id="import-fields"></div>';
  if(pages.some(page=>page.label.endsWith('OCR'))){
   const notice=document.createElement('p');notice.textContent='Este PDF foi lido por OCR. Confira nomes, valores e a separação dos campos com o original.';panel.querySelector('details').before(notice);
  }
  const selector=panel.querySelector('#import-type'),fields=panel.querySelector('#import-fields');
  function show(){
   const type=selector.value,hints=documentSuggestions(pages,type);
+  const digits=value=>String(value||'').replace(/\\D/g,'');
+  const differentCompany=digits(client.cnpj).length===14&&digits(hints.cnpj?.value).length===14&&digits(client.cnpj)!==digits(hints.cnpj.value);
   const definitions=[['name','Empresa / estabelecimento'],['cnpj','CNPJ'],['cnae','CNAE'],['address','Endereço'],['workers','Total de empregados'],...forms[type].map((label,i)=>['f'+i,label])];
-  fields.innerHTML='<p>Confira as sugestões e marque os campos que deseja aplicar. Você também pode colar trechos do texto extraído nos campos de destino.</p>'+definitions.map(([name,label])=>{
+  fields.innerHTML=(differentCompany?'<p role="alert">O CNPJ identificado no arquivo diverge do cadastro. Confira o estabelecimento antes de aplicar qualquer campo.</p>':'')+'<p>Confira as sugestões e marque os campos que deseja aplicar. Você também pode colar trechos do texto extraído nos campos de destino.</p>'+definitions.map(([name,label])=>{
    const hint=hints[name],old=name.startsWith('f')?client.docs[type]?.[name]:client[name];
-   return '<fieldset class="import-field" data-destination="'+name+'"><legend>'+esc(label)+'</legend><label><input type="checkbox" '+(hint?.value&&!old?'checked':'')+'>Aplicar neste campo</label>'+(old?'<small>Preenchimento atual: '+esc(old)+'</small>':'')+(hint?.value?'<small>Origem da sugestão: '+esc(hint.source)+'</small>':'')+'<textarea aria-label="'+esc(label)+'">'+esc(hint?.value)+'</textarea></fieldset>';
+   return '<fieldset class="import-field" data-destination="'+name+'"><legend>'+esc(label)+'</legend><label><input type="checkbox" '+(hint?.value&&!old&&!differentCompany?'checked':'')+'>Aplicar neste campo</label>'+(old?'<small>Preenchimento atual: '+esc(old)+'</small>':'')+(hint?.value?'<small>Origem da sugestão: '+esc(hint.source)+'</small>':'')+'<textarea aria-label="'+esc(label)+'">'+esc(hint?.value)+'</textarea></fieldset>';
   }).join('')+'<button type="button" class="primary">Aplicar campos selecionados</button>';
   fields.querySelector('button').onclick=()=>{
    const selected=[...fields.querySelectorAll('[data-destination]')].filter(el=>el.querySelector('input').checked&&el.querySelector('textarea').value.trim());
@@ -409,7 +442,7 @@ function reviewImport(client,item,pages,panel,onApplied){
  selector.onchange=show;show();panel.scrollIntoView();
 }
 
-const attachmentCategories=['PGR','PCMSO','LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist','Laudo ou avaliação ambiental','Outros'];
+const attachmentCategories=['PGR','PCMSO',analytical,'LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist','Laudo ou avaliação ambiental','Outros'];
 const attachmentExtensions=/\\.(pdf|docx?|xlsx?|csv|txt|jpe?g|png)$/i;
 function openAttachmentStore(){
  return new Promise((resolve,reject)=>{
