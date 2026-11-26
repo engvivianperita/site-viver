@@ -241,6 +241,14 @@ function loadOcr(){
  }).catch(error=>{ocrLibrary=null;throw error});
  return ocrLibrary;
 }
+async function createPortugueseOcr(){
+ const engine=await loadOcr();
+     return engine.createWorker('por',1,{
+      workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/worker.min.js',
+      corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0',
+      langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/por@1.0.0/4.0.0_best_int'
+     });
+}
 async function recognizePage(page,worker){
  const initial=page.getViewport({scale:1});
  const scale=Math.min(2.4,Math.sqrt(5500000/(initial.width*initial.height)));
@@ -279,12 +287,7 @@ async function readPdf(blob,onProgress){
     stage='OCR';
     onProgress?.('Reconhecendo texto na página '+i+' de '+pdf.numPages+'…');
     if(!worker){
-     const engine=await loadOcr();
-     worker=await engine.createWorker('por',1,{
-      workerPath:'https://cdn.jsdelivr.net/npm/tesseract.js@6.0.1/dist/worker.min.js',
-      corePath:'https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0',
-      langPath:'https://cdn.jsdelivr.net/npm/@tesseract.js-data/por@1.0.0/4.0.0_best_int'
-     });
+     worker=await createPortugueseOcr();
     }
     const recognized=await recognizePage(page,worker);
     if(recognized.trim().length>text.trim().length){
@@ -328,7 +331,16 @@ async function readDocx(blob){
  }
  throw new Error('O arquivo Word não contém texto legível.');
 }
+const canReadAttachment=item=>/\\.(pdf|docx|txt|csv|jpe?g|png)$/i.test(item.name);
 async function readAttachment(item,onProgress){
+ if(/\\.(jpe?g|png)$/i.test(item.name)){
+  onProgress?.('Reconhecendo texto na imagem…');
+  const worker=await createPortugueseOcr();
+  try{
+   const result=await worker.recognize(item.blob);
+   return [{label:'Imagem · OCR',text:result.data.text||''}];
+  }finally{await worker.terminate().catch(()=>{})}
+ }
  if(/\\.pdf$/i.test(item.name))return readPdf(item.blob,onProgress);
  if(/\\.docx$/i.test(item.name))return readDocx(item.blob);
  return [{label:'Arquivo de texto',text:await item.blob.text()}];
@@ -360,7 +372,7 @@ function documentSuggestions(pages,type){
  }
  return output;
 }
-function reviewImport(client,item,pages,panel){
+function reviewImport(client,item,pages,panel,onApplied){
  const excerpt=pages.map(page=>'['+page.label+']\\n'+page.text).join('\\n\\n');
  panel.innerHTML='<h3>Conferir dados de '+esc(item.name)+'</h3><label>Documento de destino<select id="import-type">'+importTypes.map(type=>'<option '+(type===item.category?'selected':'')+'>'+esc(type)+'</option>').join('')+'</select></label><details><summary>Consultar texto extraído</summary><pre class="import-source">'+esc(excerpt)+'</pre></details><div id="import-fields"></div>';
  if(pages.some(page=>page.label.endsWith('OCR'))){
@@ -389,6 +401,7 @@ function reviewImport(client,item,pages,panel){
    const previous=records;
    records=records.map(record=>record.id===client.id?recordsForReview:record);
    if(!save()){records=previous;message('O navegador impediu o salvamento.');return}
+   if(onApplied){onApplied(recordsForReview,selected.length);return}
    docType=type;tab='docs';render();
    message(selected.length+' campo(s) aplicado(s). Confira a minuta antes de emitir.');
   };
@@ -423,6 +436,8 @@ async function attachmentTransaction(mode,operation){
 function attachments(client){
  get('workspace').innerHTML='<h2>Arquivos do cliente</h2><p>'+esc(client.name)+'</p><p>Anexe PGRs anteriores, laudos, planilhas e evidências. Os arquivos ficam neste navegador, vinculados à conta e ao estabelecimento.</p><form id="attachment-form"><div class="grid"><label>Tipo de documento<select name="category">'+attachmentCategories.map(name=>'<option>'+esc(name)+'</option>').join('')+'</select></label><label>Selecionar arquivos<input name="files" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png" multiple required></label></div><small>Até 25 MB por arquivo. Arquivos PDF, Word, Excel, CSV, TXT, JPG ou PNG.</small><div class="work-actions"><button class="primary">Anexar arquivos</button></div></form><h3>Documentos anexados</h3><div id="attachment-list" class="scroll" aria-live="polite">Carregando arquivos…</div><section id="attachment-review" hidden></section>';
  const form=get('attachment-form'),list=get('attachment-list');
+ let version=0;
+ const panel=get('attachment-review');
  const visible=()=>form.isConnected;
  async function refresh(){
   try{
@@ -430,19 +445,9 @@ function attachments(client){
    if(!visible())return;
    if(!items.length){list.textContent='Nenhum documento anexado a este estabelecimento.';return}
    items.sort((a,b)=>b.added.localeCompare(a.added));
-   list.innerHTML='<table><thead><tr><th scope="col">Arquivo</th><th scope="col">Tipo</th><th scope="col">Incluído em</th><th scope="col">Ações</th></tr></thead><tbody>'+items.map((item,i)=>'<tr><td>'+esc(item.name)+'<small>'+esc(new Intl.NumberFormat('pt-BR',{style:'unit',unit:'kilobyte',maximumFractionDigits:1}).format(item.blob.size/1000))+'</small></td><td>'+esc(item.category)+'</td><td>'+esc(new Date(item.added).toLocaleDateString('pt-BR'))+'</td><td><div class="actions">'+(/\\.(pdf|docx|txt|csv)$/i.test(item.name)?'<button type="button" data-import="'+i+'">Ler e preencher</button>':'')+'<button type="button" data-download="'+i+'">Baixar</button><button type="button" data-delete="'+i+'">Remover</button></div></td></tr>').join('')+'</tbody></table>';
-   list.querySelectorAll('[data-import]').forEach(button=>button.onclick=async()=>{
-    const item=items[Number(button.dataset.import)],panel=get('attachment-review');
-    list.querySelectorAll('[data-import]').forEach(control=>control.disabled=true);
-    panel.hidden=false;panel.textContent='Lendo '+item.name+'…';
-    try{
-     const pages=await readAttachment(item,status=>{if(visible())panel.textContent=status});
-     if(!visible())return;
-     if(!pages.some(page=>page.text.trim())){panel.textContent='O leitor não conseguiu reconhecer texto neste arquivo. Tente uma digitalização mais nítida ou uma versão em Word.';return}
-     reviewImport(client,item,pages,panel);
-    }catch(error){if(visible())panel.textContent='Não foi possível ler o arquivo. '+(error?.message||'')}
-    finally{if(visible())list.querySelectorAll('[data-import]').forEach(control=>control.disabled=false)}
-   });
+   list.innerHTML='<div class="actions"><button type="button" id="read-all">Ler todos os anexos</button></div><table><thead><tr><th scope="col">Arquivo</th><th scope="col">Tipo</th><th scope="col">Incluído em</th><th scope="col">Ações</th></tr></thead><tbody>'+items.map((item,i)=>'<tr><td>'+esc(item.name)+'<small>'+esc(new Intl.NumberFormat('pt-BR',{style:'unit',unit:'kilobyte',maximumFractionDigits:1}).format(item.blob.size/1000))+'</small></td><td>'+esc(item.category)+'</td><td>'+esc(new Date(item.added).toLocaleDateString('pt-BR'))+'</td><td><div class="actions">'+(canReadAttachment(item)?'<button type="button" data-import="'+i+'">Ler e preencher</button>':'')+'<button type="button" data-download="'+i+'">Baixar</button><button type="button" data-delete="'+i+'">Remover</button></div></td></tr>').join('')+'</tbody></table>';
+   get('read-all').onclick=()=>runImport(items,true);
+   list.querySelectorAll('[data-import]').forEach(button=>button.onclick=()=>runImport([items[Number(button.dataset.import)]],false));
    list.querySelectorAll('[data-download]').forEach(button=>button.onclick=()=>{
     const item=items[Number(button.dataset.download)];
     const url=URL.createObjectURL(item.blob),link=document.createElement('a');
@@ -458,6 +463,60 @@ function attachments(client){
     }catch{if(visible()){button.disabled=false;message('Não foi possível remover o anexo.')}}
    });
   }catch{if(visible())list.textContent='Não foi possível abrir o armazenamento de arquivos deste navegador.'}
+ }
+ async function runImport(items,batch){
+  const run=++version;
+  let index=0,applied=0,skipped=0;
+  const issues=[];
+  let workingClient=current();
+  const live=()=>visible()&&version===run;
+  function controls(disabled){
+   list.querySelectorAll('[data-import],[data-delete],#read-all').forEach(button=>button.disabled=disabled);
+   form.querySelector('button').disabled=disabled;
+  }
+  function finish(stopped=false){
+   if(!live())return;
+   panel.innerHTML='<h3>'+(stopped?'Leitura interrompida':'Leitura concluída')+'</h3><p>'+applied+' documento(s) aplicado(s) · '+skipped+' pulado(s) · '+issues.length+' sem importação.</p>'+(issues.length?'<ul>'+issues.map(issue=>'<li>'+esc(issue)+'</li>').join('')+'</ul>':'');
+   controls(false);
+   version++;
+  }
+  async function next(){
+   if(!live())return;
+   if(index>=items.length){finish();return}
+   const item=items[index++];
+   if(!canReadAttachment(item)){
+    issues.push(item.name+' — formato disponível para baixar. Para leitura, converta para PDF, DOCX, TXT ou CSV.');
+    await next();return;
+   }
+   const prefix=batch?'Arquivo '+index+' de '+items.length+' · ':'';
+   panel.textContent=prefix+'Lendo '+item.name+'…';
+   let pages;
+   try{
+    pages=await readAttachment(item,status=>{if(live())panel.textContent=prefix+status});
+    if(!pages.some(page=>page.text.trim()))throw new Error('Nenhum texto legível encontrado.');
+   }catch(error){
+    if(!live())return;
+    const description=item.name+' — '+(error?.message||'falha de leitura');
+    if(batch){issues.push(description);await next()}
+    else{panel.textContent=description;controls(false)}
+    return;
+   }
+   if(!live())return;
+   if(!batch){reviewImport(workingClient,item,pages,panel);controls(false);return}
+   const editor=document.createElement('div');
+   const actions=document.createElement('div');
+   actions.className='actions';
+   actions.innerHTML='<button type="button">Pular documento</button><button type="button">Encerrar lote</button>';
+   const [skip,stop]=actions.querySelectorAll('button');
+   skip.onclick=()=>{skipped++;next()};
+   stop.onclick=()=>finish(true);
+   const heading=document.createElement('p');heading.textContent='Arquivo '+index+' de '+items.length;
+   panel.replaceChildren(heading,actions,editor);
+   reviewImport(workingClient,item,pages,editor,(updated,count)=>{
+    workingClient=updated;applied++;message(count+' campo(s) aplicado(s).');next();
+   });
+  }
+  panel.hidden=false;controls(true);await next();
  }
  form.onsubmit=async event=>{
   event.preventDefault();
