@@ -34,6 +34,13 @@ export default function ProcessosPage() {
             <Link className="button" href="/clientes/processos/carnes/painel" prefetch={false}>Acessar painel de regularização</Link>
             <p><LockKeyhole size={16} aria-hidden="true" /> Acesso pelo portal Viver, conforme autorização para a empresa.</p>
           </article>
+          <article className="client-system-card">
+            <span className="client-system-icon"><ClipboardCheck aria-hidden="true" /></span>
+            <span className="client-system-label">SEGURANÇA E SAÚDE NO TRABALHO</span>
+            <h3>Gestão Documental de SST</h3>
+            <p>Cadastre estabelecimentos, confira a matriz de aplicabilidade e elabore minutas de PGR, AEP, AET e outros documentos de SST.</p>
+            <Link className="button" href="/clientes/processos/documentacao" prefetch={false}>Acessar Gestão Documental</Link>
+          </article>
         </div>
         <p className="client-hub-help"><Link href="/clientes">Voltar à Área do cliente</Link></p>
         <p className="client-hub-help">Precisa de acesso ao processo? <Link href="/contato">Fale com a equipe da Viver</Link>.</p>
