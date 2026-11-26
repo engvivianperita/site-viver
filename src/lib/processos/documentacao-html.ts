@@ -8,7 +8,7 @@ header{padding-block:10px}nav{padding:6px 0}.dashboard,.editor-head{display:flex
 <header><div class="brand"><img src="/brand/logo-viver-positiva.png" alt="Viver Segurança no Trabalho"><strong>Gestão documental</strong></div><a href="/clientes/processos">Voltar a Processos</a></header>
 <main><div id="intro"><h1>Documentação de SST</h1><p>Organize as exigências por estabelecimento e prepare minutas a partir das suas avaliações de campo.</p></div>
 <section id="clientbar"><div class="grid"><label>Estabelecimento ativo<select id="clients"></select></label><div class="actions" style="align-items:end;padding-bottom:12px"><button id="new" class="primary">Novo estabelecimento</button></div></div></section>
-<nav aria-label="Áreas do app"><button data-tab="home">Painel</button><button data-tab="profile">Cadastro e atividades</button><button data-tab="matrix">Matriz de aplicabilidade</button><button data-tab="fieldwork">PGR do zero</button><button data-tab="docs">Documentos</button></nav>
+<nav aria-label="Áreas do app"><button data-tab="home">Painel</button><button data-tab="profile">Cadastro e atividades</button><button data-tab="matrix">Matriz de aplicabilidade</button><button data-tab="fieldwork">PGR do zero</button><button data-tab="attachments">Arquivos do cliente</button><button data-tab="docs">Documentos</button></nav>
 <section id="workspace"></section><p id="status" role="status"></p><section id="paper" hidden></section>
 </main>
 <script>
@@ -77,6 +77,7 @@ function render(){
  if(!client){get('workspace').innerHTML='<h2>Estabelecimento necessário</h2><p>Cadastre ou selecione um estabelecimento para continuar.</p>';return}
  if(tab==='matrix'){matrix(client);return}
  if(tab==='fieldwork'){fieldwork(client);return}
+ if(tab==='attachments'){attachments(client);return}
  editor(client);
 }
 function profile(client){
@@ -199,6 +200,75 @@ function fieldworkReport(work,type){
    rows.filter(f=>f.measure).map(f=>[f.activity+' — '+f.measure,f.owner,f.deadline,f.followup])
   ]
  };
+}
+
+const attachmentCategories=['PGR','PCMSO','LTCAT','AEP','AET','APR','Ordem de Serviço','POP','DDS','Checklist','Laudo ou avaliação ambiental','Outros'];
+const attachmentExtensions=/\\.(pdf|docx?|xlsx?|csv|txt|jpe?g|png)$/i;
+function openAttachmentStore(){
+ return new Promise((resolve,reject)=>{
+  const request=indexedDB.open(key+'-arquivos',1);
+  request.onupgradeneeded=()=>{
+   request.result.createObjectStore('attachments',{keyPath:'id'}).createIndex('client','client');
+  };
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+  request.onblocked=()=>reject(new Error('Armazenamento bloqueado'));
+ });
+}
+async function attachmentTransaction(mode,operation){
+ const db=await openAttachmentStore();
+ try{
+  return await new Promise((resolve,reject)=>{
+   const txn=db.transaction('attachments',mode);
+   const result=operation(txn.objectStore('attachments'));
+   txn.oncomplete=()=>resolve(result?.result);
+   txn.onabort=()=>reject(txn.error||new Error('Operação interrompida'));
+  });
+ }finally{db.close()}
+}
+function attachments(client){
+ get('workspace').innerHTML='<h2>Arquivos do cliente</h2><p>'+esc(client.name)+'</p><p>Anexe PGRs anteriores, laudos, planilhas e evidências. Os arquivos ficam neste navegador, vinculados à conta e ao estabelecimento.</p><form id="attachment-form"><div class="grid"><label>Tipo de documento<select name="category">'+attachmentCategories.map(name=>'<option>'+esc(name)+'</option>').join('')+'</select></label><label>Selecionar arquivos<input name="files" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png" multiple required></label></div><small>Até 25 MB por arquivo. Arquivos PDF, Word, Excel, CSV, TXT, JPG ou PNG.</small><div class="work-actions"><button class="primary">Anexar arquivos</button></div></form><h3>Documentos anexados</h3><div id="attachment-list" class="scroll" aria-live="polite">Carregando arquivos…</div>';
+ const form=get('attachment-form'),list=get('attachment-list');
+ const visible=()=>form.isConnected;
+ async function refresh(){
+  try{
+   const items=await attachmentTransaction('readonly',store=>store.index('client').getAll(client.id));
+   if(!visible())return;
+   if(!items.length){list.textContent='Nenhum documento anexado a este estabelecimento.';return}
+   items.sort((a,b)=>b.added.localeCompare(a.added));
+   list.innerHTML='<table><thead><tr><th scope="col">Arquivo</th><th scope="col">Tipo</th><th scope="col">Incluído em</th><th scope="col">Ações</th></tr></thead><tbody>'+items.map((item,i)=>'<tr><td>'+esc(item.name)+'<small>'+esc(new Intl.NumberFormat('pt-BR',{style:'unit',unit:'kilobyte',maximumFractionDigits:1}).format(item.blob.size/1000))+'</small></td><td>'+esc(item.category)+'</td><td>'+esc(new Date(item.added).toLocaleDateString('pt-BR'))+'</td><td><div class="actions"><button type="button" data-download="'+i+'">Baixar</button><button type="button" data-delete="'+i+'">Remover</button></div></td></tr>').join('')+'</tbody></table>';
+   list.querySelectorAll('[data-download]').forEach(button=>button.onclick=()=>{
+    const item=items[Number(button.dataset.download)];
+    const url=URL.createObjectURL(item.blob),link=document.createElement('a');
+    link.href=url;link.download=item.name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+   });
+   list.querySelectorAll('[data-delete]').forEach(button=>button.onclick=async()=>{
+    const item=items[Number(button.dataset.delete)];
+    if(!confirm('Remover o anexo “'+item.name+'” deste navegador?'))return;
+    button.disabled=true;
+    try{
+     await attachmentTransaction('readwrite',store=>store.delete(item.id));
+     if(visible()){message('Anexo removido.');await refresh()}
+    }catch{if(visible()){button.disabled=false;message('Não foi possível remover o anexo.')}}
+   });
+  }catch{if(visible())list.textContent='Não foi possível abrir o armazenamento de arquivos deste navegador.'}
+ }
+ form.onsubmit=async event=>{
+  event.preventDefault();
+  const files=[...form.elements.files.files],category=form.elements.category.value;
+  if(!files.length)return;
+  const invalid=files.filter(file=>!attachmentExtensions.test(file.name)||file.size===0||file.size>25*1024*1024);
+  if(invalid.length){message('Verifique o formato e o tamanho de: '+invalid.map(file=>file.name).join(', '));return}
+  const button=form.querySelector('button');button.disabled=true;
+  try{
+   await attachmentTransaction('readwrite',store=>{
+    for(const file of files)store.add({id:crypto.randomUUID(),client:client.id,name:file.name,category,blob:file,added:new Date().toISOString()});
+   });
+   if(visible()){form.elements.files.value='';message(files.length===1?'Arquivo anexado.':files.length+' arquivos anexados.');await refresh()}
+  }catch{if(visible())message('Não foi possível salvar os arquivos. Verifique o espaço e as permissões do navegador.')}
+  finally{if(visible())button.disabled=false}
+ };
+ refresh();
 }
 
 function dashboard(client){
