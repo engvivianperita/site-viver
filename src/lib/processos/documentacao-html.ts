@@ -32,6 +32,7 @@ const forms={
 forms.PCMSO=['Objetivo e abrangência','Riscos do PGR e possíveis agravos','Critérios e condutas médicas','Vigilância da saúde e encaminhamentos','Planejamento do relatório analítico','Médico responsável e CRM'];
 forms.LTCAT=['Tipo de laudo e finalidade','Ambientes, setores, funções e atividades','Fontes e vias de exposição e periodicidade','Metodologia, datas e evidências das avaliações','Descrição e eficácia das medidas de controle','Conclusão previdenciária fundamentada','Profissional habilitado, registro e responsabilidade técnica'];
 const analytical='Relatório Analítico do PCMSO';
+forms.APR.push('Número da APR, ordem de manutenção ou contrato','Empresa contratada, área, setor e equipamento','Programação, datas, horários e prorrogações','Objetivo e escopo do serviço','Máquinas, ferramentas, materiais e produtos','EPI, EPC e outros recursos de proteção','Critérios de probabilidade, severidade e classificação do risco','Permissões, procedimentos e condições de parada e reavaliação','Comunicação e recursos de emergência','Observações e pendências de encerramento');
 forms.PGR.push('Introdução, objetivo e base legal','Responsabilidades','Identificação de perigos e avaliação de riscos','Análise de acidentes e doenças relacionadas ao trabalho','Capacitação e treinamento','Preparação para emergências','Implementação, conclusão e controle de revisões');
 forms.AEP.push('Objetivo e base legal','Análise ergonômica preliminar por função','Considerações gerais e recomendações','Conclusão e necessidade de AET');
 forms.PCMSO.push('Desenvolvimento e planejamento do PCMSO','Documentação, registros e ASO','Operacionalização e exames médicos ocupacionais','Exames complementares: justificativa e interpretação','Quadro de grupos homogêneos de exposição (GHE)','Cronograma e considerações finais');
@@ -45,7 +46,14 @@ const reportTables={
  PGR:[['Inventário de riscos',['Setor / atividade','Perigo e fonte','Expostos / exposição','Agravos e controles','Classificação / prioridade']],['Plano de ação',['Medida','Responsável','Prazo','Acompanhamento e eficácia']]],
  AEP:[['Avaliação por situação de trabalho',['Setor / atividade','Fatores de risco','Evidência e avaliação','Medidas e encaminhamento']]],
  AET:[['Plano de intervenção',['Achado','Recomendação','Responsável e prazo','Validação / acompanhamento']]],
- APR:[['Análise por etapa',['Etapa','Perigo','Consequência','Controles / risco residual']]],
+ APR:[
+  ['Análise por etapa',['Etapa','Perigo','Consequência','Controles / risco residual','Probabilidade','Severidade','Nível inicial','Nº da PT, se aplicável']],
+  ['Checklist de planejamento e liberação',['Item a verificar','Conforme / não conforme / não aplicável','Observação ou providência']],
+  ['Elaboração, revisão e aprovação',['Papel','Nome / empresa','Data','Assinatura']],
+  ['Ciência da equipe executante',['Nome','Empresa / função','Registro','Assinatura']],
+  ['Liberação, revisão diária e mudança de cenário',['Data e horário','Mudança identificada','Providência','Responsável pela liberação']],
+  ['Encerramento e plano de ação',['Pendência ou risco residual','Ação','Responsável','Prazo / situação']]
+ ],
  'Ordem de Serviço':[['Ciência',['Trabalhador ou função','Data','Assinatura']]],
  POP:[['Instruções de execução',['Etapa','Procedimento','Controle / registro']]],
  DDS:[['Registro de participação',['Nome','Função','Assinatura']]],
@@ -225,6 +233,7 @@ const sectionAliases={
  DDS:[['tema'],['situação de trabalho'],['orientações']],
  Checklist:[['atividade','equipamento'],['itens de inspeção'],['resultados','pendências'],['responsáveis e prazos']]
 };
+sectionAliases.APR.push(['número da apr','om / contrato nº'],['área e setor','local de trabalho'],['programação do trabalho','horário de trabalho'],['objetivo','descrição da atividade'],['recursos materiais necessários','equipamentos a serem usados'],['equipamento de proteção individual','equipamentos de proteção coletiva necessários'],['matriz para análise de risco'],['normas de segurança principais','liberação diária'],['comunicação de emergência'],['avaliação de serviço concluído','plano de ação']);
 sectionAliases.PGR[0].push('descrição geral das atividades');
 sectionAliases.PGR[1].push('definições e critérios para avaliação de riscos','matriz de risco – critérios utilizados');
 sectionAliases.PGR[2].push('ambientes, cargos e inventário de riscos ocupacionais','tabela técnica – inventário de riscos');
